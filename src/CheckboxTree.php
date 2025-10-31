@@ -3,10 +3,7 @@
 namespace Promethys\CheckboxTree;
 
 use Filament\Forms\Components\CheckboxList;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class CheckboxTree extends CheckboxList

@@ -10,11 +10,11 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
 use Livewire\Features\SupportTesting\Testable;
+use Promethys\CheckboxTree\Commands\CheckboxTreeCommand;
+use Promethys\CheckboxTree\Testing\TestsCheckboxTree;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Promethys\CheckboxTree\Commands\CheckboxTreeCommand;
-use Promethys\CheckboxTree\Testing\TestsCheckboxTree;
 
 class CheckboxTreeServiceProvider extends PackageServiceProvider
 {
