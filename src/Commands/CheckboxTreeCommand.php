@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Promethys\CheckboxTree\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class CheckboxTreeCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'checkbox-tree';
 
     public $description = 'My command';
 
