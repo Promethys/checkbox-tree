@@ -3,7 +3,11 @@
 namespace Promethys\CheckboxTree;
 
 use Filament\Forms\Components\CheckboxList;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class CheckboxTree extends CheckboxList
 {
@@ -14,6 +18,20 @@ class CheckboxTree extends CheckboxList
     protected string $parentKey = 'parent_id';
 
     protected array $hierarchicalOptions = [];
+
+    protected ?string $relationshipTitleAttribute = null;
+
+    protected $modifyRelationshipQueryUsing = null;
+
+    protected bool $isSearchable = false;
+
+    protected ?string $searchPrompt = null;
+
+    protected bool $isExpandable = false;
+
+    protected bool $defaultExpanded = false;
+
+    protected bool $isBulkToggleable = false;
 
     /**
      * Enable hierarchical mode and optionally specify the parent key field name.
@@ -27,6 +45,159 @@ class CheckboxTree extends CheckboxList
     }
 
     /**
+     * Enable search functionality for the checkbox tree.
+     */
+    public function searchable(bool | string $condition = true): static
+    {
+        if (is_string($condition)) {
+            $this->searchPrompt = $condition;
+            $this->isSearchable = true;
+        } else {
+            $this->isSearchable = $condition;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Check if the checkbox tree is searchable.
+     */
+    public function isSearchable(): bool
+    {
+        return $this->isSearchable;
+    }
+
+    /**
+     * Get the search prompt/placeholder text.
+     */
+    public function getSearchPrompt(): string
+    {
+        return $this->searchPrompt ?? __('Search...');
+    }
+
+    /**
+     * Enable collapsible/expandable parent nodes.
+     */
+    public function expandable(bool $condition = true, bool $defaultExpanded = false): static
+    {
+        $this->isExpandable = $condition;
+        $this->defaultExpanded = $defaultExpanded;
+
+        return $this;
+    }
+
+    /**
+     * Check if the tree is expandable/collapsible.
+     */
+    public function isExpandable(): bool
+    {
+        return $this->isExpandable;
+    }
+
+    /**
+     * Check if nodes should be expanded by default.
+     */
+    public function isDefaultExpanded(): bool
+    {
+        return $this->defaultExpanded;
+    }
+
+    /**
+     * Enable bulk toggle (select all / deselect all) buttons.
+     */
+    public function bulkToggleable(bool $condition = true): static
+    {
+        $this->isBulkToggleable = $condition;
+
+        return $this;
+    }
+
+    /**
+     * Check if bulk toggle is enabled.
+     */
+    public function isBulkToggleable(): bool
+    {
+        return $this->isBulkToggleable;
+    }
+
+    /**
+     * Override relationship method to support hierarchical relationships.
+     */
+    public function relationship(
+        string $name,
+        string $titleAttribute,
+        ?callable $modifyQueryUsing = null,
+    ): static {
+        $this->relationshipTitleAttribute = $titleAttribute;
+        $this->modifyRelationshipQueryUsing = $modifyQueryUsing;
+
+        return parent::relationship($name, $titleAttribute, $modifyQueryUsing);
+    }
+
+    /**
+     * Get options from relationship and build hierarchical structure if needed.
+     */
+    protected function getOptionsFromRelationship(): array
+    {
+        $relationship = $this->getRelationship();
+
+        if (! $relationship) {
+            return [];
+        }
+
+        $relationshipQuery = $relationship->getRelated()->query();
+
+        if ($this->modifyRelationshipQueryUsing) {
+            $relationshipQuery = $this->evaluate($this->modifyRelationshipQueryUsing, [
+                'query' => $relationshipQuery,
+            ]) ?? $relationshipQuery;
+        }
+
+        $records = $relationshipQuery->get();
+
+        if (! $this->isHierarchical) {
+            // Standard flat list
+            return $this->convertRecordsToOptions($records);
+        }
+
+        // Build hierarchical structure
+        return $this->buildTreeFromRecords($records);
+    }
+
+    /**
+     * Convert records to flat options array.
+     */
+    protected function convertRecordsToOptions(Collection $records): array
+    {
+        $titleAttribute = $this->relationshipTitleAttribute;
+
+        return $records->mapWithKeys(function (Model $record) use ($titleAttribute) {
+            return [$record->getKey() => $record->getAttribute($titleAttribute)];
+        })->toArray();
+    }
+
+    /**
+     * Build hierarchical tree from eloquent records.
+     */
+    protected function buildTreeFromRecords(Collection $records): array
+    {
+        $titleAttribute = $this->relationshipTitleAttribute;
+        $parentKey = $this->parentKey;
+
+        // Convert records to array format for tree building
+        $items = $records->mapWithKeys(function (Model $record) use ($titleAttribute, $parentKey) {
+            return [
+                $record->getKey() => [
+                    'label' => $record->getAttribute($titleAttribute),
+                    $parentKey => $record->getAttribute($parentKey),
+                ],
+            ];
+        })->toArray();
+
+        return $this->buildTree($items);
+    }
+
+    /**
      * Get the hierarchical options structure for the view.
      */
     public function getHierarchicalOptions(): array
@@ -35,7 +206,12 @@ class CheckboxTree extends CheckboxList
             return $this->hierarchicalOptions;
         }
 
-        $options = $this->getOptions();
+        // Check if using relationship
+        if ($this->getRelationship()) {
+            $options = $this->getOptionsFromRelationship();
+        } else {
+            $options = $this->getOptions();
+        }
 
         // If options are already in hierarchical format, use them directly
         if ($this->hasNestedStructure($options)) {
