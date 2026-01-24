@@ -65,23 +65,17 @@
         <label class="flex gap-x-3">
             <x-filament::input.checkbox :attributes="$checkboxAttributeBag" />
 
-            <div class="flex flex-col">
-                <span @class([
-                    'text-sm leading-6',
-                    'font-medium text-gray-950 dark:text-white' => ! $disabled,
-                    'text-gray-500 dark:text-gray-400' => $disabled,
-                ])>
+            <div class="grid text-sm leading-6">
+                <span class="fi-fo-checkbox-list-option-label overflow-hidden break-words font-medium text-gray-950 dark:text-white">
                     {{ $label }}
                 </span>
 
                 @if ($description)
-                    <span @class([
-                        'text-xs leading-5',
-                        'text-gray-500 dark:text-gray-400' => ! $disabled,
-                        'text-gray-400 dark:text-gray-500' => $disabled,
-                    ])>
+                    <p
+                        class="fi-fo-checkbox-list-option-description text-gray-500 dark:text-gray-400"
+                    >
                         {{ $description }}
-                    </span>
+                    </p>
                 @endif
             </div>
         </label>
