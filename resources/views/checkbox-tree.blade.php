@@ -11,6 +11,7 @@
     $hierarchicalOptions = $getHierarchicalOptions();
     $indeterminateItems = $getIndeterminateItems();
     $parentKeys = $getParentKeys();
+    $storeParentKeys = $shouldStoreParentKeys();
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
@@ -26,6 +27,7 @@
             collapsible: @js($isCollapsible),
             defaultCollapsed: @js($defaultCollapsed),
             parentKeys: @js($parentKeys),
+            storeParentKeys: @js($storeParentKeys),
         })"
         {{ $attributes->merge($getExtraAttributes(), escape: false)->class([
             'fi-fo-checkbox-tree',

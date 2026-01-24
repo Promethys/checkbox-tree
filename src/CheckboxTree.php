@@ -14,14 +14,55 @@ class CheckboxTree extends CheckboxList
 
     protected array $hierarchicalOptions = [];
 
-    protected bool $isCollapsible = false;
+    protected bool | \Closure $isCollapsible = false;
 
-    protected bool $defaultCollapsed = false;
+    protected bool | \Closure $defaultCollapsed = false;
+
+    protected bool | \Closure $storeParentKeys = false;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->dehydrateStateUsing(function (?array $state): ?array {
+            if ($state === null) {
+                return null;
+            }
+
+            if ($this->shouldStoreParentKeys()) {
+                return $state;
+            }
+
+            // Filter out parent keys, keep only leaf nodes
+            $parentKeys = $this->getParentKeys();
+
+            return array_values(array_filter($state, fn ($key) => ! in_array($key, $parentKeys, true)));
+        });
+    }
+
+    /**
+     * Control whether parent keys are stored in the state.
+     * Default is false (only leaf nodes are stored).
+     */
+    public function storeParentKeys(bool | \Closure $condition = true): static
+    {
+        $this->storeParentKeys = $condition;
+
+        return $this;
+    }
+
+    /**
+     * Check if parent keys should be stored in the state.
+     */
+    public function shouldStoreParentKeys(): bool
+    {
+        return (bool) $this->evaluate($this->storeParentKeys);
+    }
 
     /**
      * Enable collapsible/collapsible parent nodes.
      */
-    public function collapsible(bool $condition = true, bool $defaultCollapsed = false): static
+    public function collapsible(bool | \Closure $condition = true, bool | \Closure $defaultCollapsed = false): static
     {
         $this->isCollapsible = $condition;
         $this->defaultCollapsed = $defaultCollapsed;
@@ -34,7 +75,7 @@ class CheckboxTree extends CheckboxList
      */
     public function isCollapsible(): bool
     {
-        return $this->isCollapsible;
+        return (bool) $this->evaluate($this->isCollapsible);
     }
 
     /**
@@ -42,7 +83,7 @@ class CheckboxTree extends CheckboxList
      */
     public function isDefaultCollapsed(): bool
     {
-        return $this->defaultCollapsed;
+        return (bool) $this->evaluate($this->defaultCollapsed);
     }
 
     /**
@@ -61,7 +102,7 @@ class CheckboxTree extends CheckboxList
         $parentKeys = [];
 
         foreach ($options as $key => $option) {
-            if (is_array($option) && isset($option['children']) && !empty($option['children'])) {
+            if (is_array($option) && isset($option['children']) && ! empty($option['children'])) {
                 $parentKeys[] = $key;
                 $parentKeys = array_merge($parentKeys, $this->collectParentKeys($option['children']));
             }
@@ -82,159 +123,6 @@ class CheckboxTree extends CheckboxList
     }
 
     /**
-     * Enable search functionality for the checkbox tree.
-     */
-    public function searchable(bool | string $condition = true): static
-    {
-        if (is_string($condition)) {
-            $this->searchPrompt = $condition;
-            $this->isSearchable = true;
-        } else {
-            $this->isSearchable = $condition;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Check if the checkbox tree is searchable.
-     */
-    public function isSearchable(): bool
-    {
-        return $this->isSearchable;
-    }
-
-    /**
-     * Get the search prompt/placeholder text.
-     */
-    public function getSearchPrompt(): string
-    {
-        return $this->searchPrompt ?? __('Search...');
-    }
-
-    /**
-     * Enable collapsible/expandable parent nodes.
-     */
-    public function expandable(bool $condition = true, bool $defaultExpanded = false): static
-    {
-        $this->isExpandable = $condition;
-        $this->defaultExpanded = $defaultExpanded;
-
-        return $this;
-    }
-
-    /**
-     * Check if the tree is expandable/collapsible.
-     */
-    public function isExpandable(): bool
-    {
-        return $this->isExpandable;
-    }
-
-    /**
-     * Check if nodes should be expanded by default.
-     */
-    public function isDefaultExpanded(): bool
-    {
-        return $this->defaultExpanded;
-    }
-
-    /**
-     * Enable bulk toggle (select all / deselect all) buttons.
-     */
-    public function bulkToggleable(bool $condition = true): static
-    {
-        $this->isBulkToggleable = $condition;
-
-        return $this;
-    }
-
-    /**
-     * Check if bulk toggle is enabled.
-     */
-    public function isBulkToggleable(): bool
-    {
-        return $this->isBulkToggleable;
-    }
-
-    /**
-     * Override relationship method to support hierarchical relationships.
-     */
-    public function relationship(
-        string $name,
-        string $titleAttribute,
-        ?callable $modifyQueryUsing = null,
-    ): static {
-        $this->relationshipTitleAttribute = $titleAttribute;
-        $this->modifyRelationshipQueryUsing = $modifyQueryUsing;
-
-        return parent::relationship($name, $titleAttribute, $modifyQueryUsing);
-    }
-
-    /**
-     * Get options from relationship and build hierarchical structure if needed.
-     */
-    protected function getOptionsFromRelationship(): array
-    {
-        $relationship = $this->getRelationship();
-
-        if (! $relationship) {
-            return [];
-        }
-
-        $relationshipQuery = $relationship->getRelated()->query();
-
-        if ($this->modifyRelationshipQueryUsing) {
-            $relationshipQuery = $this->evaluate($this->modifyRelationshipQueryUsing, [
-                'query' => $relationshipQuery,
-            ]) ?? $relationshipQuery;
-        }
-
-        $records = $relationshipQuery->get();
-
-        if (! $this->isHierarchical) {
-            // Standard flat list
-            return $this->convertRecordsToOptions($records);
-        }
-
-        // Build hierarchical structure
-        return $this->buildTreeFromRecords($records);
-    }
-
-    /**
-     * Convert records to flat options array.
-     */
-    protected function convertRecordsToOptions(Collection $records): array
-    {
-        $titleAttribute = $this->relationshipTitleAttribute;
-
-        return $records->mapWithKeys(function (Model $record) use ($titleAttribute) {
-            return [$record->getKey() => $record->getAttribute($titleAttribute)];
-        })->toArray();
-    }
-
-    /**
-     * Build hierarchical tree from eloquent records.
-     */
-    protected function buildTreeFromRecords(Collection $records): array
-    {
-        $titleAttribute = $this->relationshipTitleAttribute;
-        $parentKey = $this->parentKey;
-
-        // Convert records to array format for tree building
-        $items = $records->mapWithKeys(function (Model $record) use ($titleAttribute, $parentKey) {
-            return [
-                $record->getKey() => [
-                    'label' => $record->getAttribute($titleAttribute),
-                    $parentKey => $record->getAttribute($parentKey),
-                ],
-            ];
-        })->toArray();
-
-        return $this->buildTree($items);
-    }
-
-    /**
      * Get the hierarchical options structure for the view.
      */
     public function getHierarchicalOptions(): array
@@ -243,12 +131,7 @@ class CheckboxTree extends CheckboxList
             return $this->hierarchicalOptions;
         }
 
-        // Check if using relationship
-        if ($this->getRelationship()) {
-            $options = $this->getOptionsFromRelationship();
-        } else {
-            $options = $this->getOptions();
-        }
+        $options = $this->getOptions();
 
         // If options are already in hierarchical format, use them directly
         if ($this->hasNestedStructure($options)) {

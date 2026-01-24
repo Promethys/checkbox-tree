@@ -69,9 +69,7 @@ Clear caches:
 php artisan optimize:clear
 ```
 
-## Data Structure
-
-The selected values are stored as a flat array of keys, making it easy to work with:
+## Usage
 
 ```php
 use Promethys\CheckboxTree\CheckboxTree;
@@ -100,16 +98,26 @@ CheckboxTree::make('permissions')
 
 ### Stored Data Format
 
-Selections are stored as a flat array:
+By default, only leaf nodes (items without children) are stored:
 
 ```php
-['user_management', 'create_users', 'edit_users', 'delete_users']
+['create_users', 'edit_users', 'delete_users']
 ```
 
 This works seamlessly with:
 - JSON database columns
 - Pivot tables via Filament relationships
 - Simple array storage
+
+To include parent keys in the stored value, use `storeParentKeys()`:
+
+```php
+CheckboxTree::make('permissions')
+    ->storeParentKeys()
+    ->options([...])
+
+// Stored value: ['user_management', 'create_users', 'edit_users', 'delete_users']
+```
 
 ### Multi-Level Nesting
 
@@ -215,6 +223,18 @@ CheckboxTree::make('technologies')
     ->options([...])
 ```
 
+### Store Parent Keys
+
+By default, only leaf nodes are stored in the state. To include parent keys:
+
+```php
+CheckboxTree::make('permissions')
+    ->storeParentKeys()
+    ->options([...])
+```
+
+This is useful when you need to know which parent categories were selected, not just the individual items.
+
 ## How It Works
 
 1. **Check a parent** - All children become checked, parent shows as checked
@@ -228,7 +248,6 @@ CheckboxTree::make('technologies')
 Future versions will include:
 
 - **Eloquent relationships** - Build tree from database models with `parent_id`
-- **Store options** - Choose whether to include parent keys in stored value
 
 ## Development
 
