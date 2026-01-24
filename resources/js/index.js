@@ -1,14 +1,220 @@
-export default function checkboxTreeFormComponent({ state, options, indeterminateItems }) {
+export default function checkboxTreeFormComponent({
+    state,
+    options,
+    indeterminateItems,
+    searchable = false,
+    collapsible = false,
+    defaultCollapsed = false,
+    parentKeys = []
+}) {
     return {
         state: state,
         options: options,
         indeterminateItems: indeterminateItems,
+        areAllSelected: false,
+        searchable: searchable,
+        search: '',
+        collapsible: collapsible,
+        defaultCollapsed: defaultCollapsed,
+        collapsedItems: [],
 
         init() {
             // Watch for external state changes
             this.$watch('state', () => {
                 this.updateIndeterminateStates()
+                this.updateAreAllSelected()
             })
+
+            // Initialize areAllSelected
+            this.updateAreAllSelected()
+
+            // Initialize collapsed state
+            if (this.collapsible) {
+                this.collapsedItems = this.defaultCollapsed ? [...parentKeys] : []
+            }
+        },
+
+        /**
+         * Check if an item is collapsed
+         */
+        isCollapsed(key) {
+            if (!this.collapsible) {
+                return false
+            }
+            return this.collapsedItems.includes(key)
+        },
+
+        /**
+         * Toggle collapsed state for an item
+         */
+        toggleCollapsed(key) {
+            if (!this.collapsible) {
+                return
+            }
+
+            if (this.collapsedItems.includes(key)) {
+                this.collapsedItems = this.collapsedItems.filter(k => k !== key)
+            } else {
+                this.collapsedItems = [...this.collapsedItems, key]
+            }
+        },
+
+        /**
+         * Expand all parent items
+         */
+        expandAll() {
+            this.collapsedItems = []
+        },
+
+        /**
+         * Collapse all parent items
+         */
+        collapseAll() {
+            this.collapsedItems = [...parentKeys]
+        },
+
+        /**
+         * Check if an item should be visible based on search
+         * An item is visible if:
+         * - Search is empty
+         * - Its label matches the search
+         * - Any of its descendants match the search
+         */
+        isItemVisible(key, label) {
+            if (!this.searchable || !this.search || this.search.trim() === '') {
+                return true
+            }
+
+            const searchLower = this.search.toLowerCase()
+            const labelLower = (label || '').toLowerCase()
+
+            // Check if this item's label matches
+            if (labelLower.includes(searchLower)) {
+                return true
+            }
+
+            // Check if any descendant matches
+            const option = this.findOptionByKey(key)
+            if (option && option.children) {
+                return this.hasMatchingDescendant(option.children, searchLower)
+            }
+
+            return false
+        },
+
+        /**
+         * Check if any descendant of an option matches the search
+         */
+        hasMatchingDescendant(children, searchLower) {
+            for (const [key, child] of Object.entries(children)) {
+                const childLabel = (typeof child === 'string' ? child : (child.label || '')).toLowerCase()
+
+                if (childLabel.includes(searchLower)) {
+                    return true
+                }
+
+                if (child.children && this.hasMatchingDescendant(child.children, searchLower)) {
+                    return true
+                }
+            }
+
+            return false
+        },
+
+        /**
+         * Find an option by its key in the tree
+         */
+        findOptionByKey(targetKey, options = null) {
+            options = options || this.options
+
+            for (const [key, option] of Object.entries(options)) {
+                if (key === targetKey) {
+                    return option
+                }
+
+                if (option.children) {
+                    const found = this.findOptionByKey(targetKey, option.children)
+                    if (found) {
+                        return found
+                    }
+                }
+            }
+
+            return null
+        },
+
+        /**
+         * Check if there are any visible results for the current search
+         */
+        hasVisibleResults() {
+            if (!this.searchable || !this.search || this.search.trim() === '') {
+                return true
+            }
+
+            const searchLower = this.search.toLowerCase()
+            return this.hasAnyMatch(this.options, searchLower)
+        },
+
+        /**
+         * Check if any option in the tree matches the search
+         */
+        hasAnyMatch(options, searchLower) {
+            for (const [key, option] of Object.entries(options)) {
+                const label = (typeof option === 'string' ? option : (option.label || '')).toLowerCase()
+
+                if (label.includes(searchLower)) {
+                    return true
+                }
+
+                if (option.children && this.hasAnyMatch(option.children, searchLower)) {
+                    return true
+                }
+            }
+
+            return false
+        },
+
+        /**
+         * Select all options in the tree
+         */
+        selectAll() {
+            this.state = this.getAllKeys(this.options)
+            this.updateIndeterminateStates()
+            this.updateAreAllSelected()
+        },
+
+        /**
+         * Deselect all options in the tree
+         */
+        deselectAll() {
+            this.state = []
+            this.updateIndeterminateStates()
+            this.updateAreAllSelected()
+        },
+
+        /**
+         * Update the areAllSelected flag
+         */
+        updateAreAllSelected() {
+            const allKeys = this.getAllKeys(this.options)
+            this.areAllSelected = allKeys.length > 0 && allKeys.every(key => this.isChecked(key))
+        },
+
+        /**
+         * Get all keys from the options tree (recursive)
+         */
+        getAllKeys(options) {
+            const keys = []
+
+            Object.entries(options).forEach(([key, option]) => {
+                keys.push(key)
+
+                if (option.children && Object.keys(option.children).length > 0) {
+                    keys.push(...this.getAllKeys(option.children))
+                }
+            })
+
+            return keys
         },
 
         /**

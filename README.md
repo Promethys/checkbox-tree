@@ -10,6 +10,9 @@ A hierarchical checkbox tree component for Filament v3 forms. Display checkboxes
 - **Hierarchical Structure** - Display checkboxes in unlimited nested levels
 - **Parent-Child Control** - Checking a parent automatically selects all children
 - **Indeterminate States** - Visual indication when only some children are selected
+- **Collapsible Sections** - Expand/collapse parent nodes with smooth animations
+- **Search** - Filter tree items by keyword, shows parents when children match
+- **Bulk Actions** - Select all / Deselect all buttons with customizable labels
 - **Native Filament Styling** - Uses Filament's checkbox component, works with custom themes
 - **Dark Mode Support** - Fully compatible with Filament's dark mode
 - **Flat Array Storage** - Stores selections as a simple array, compatible with JSON columns and relationships
@@ -147,6 +150,69 @@ CheckboxTree::make('permissions')
     ->options([...])
 ```
 
+### Collapsible Sections
+
+Enable collapsible parent nodes:
+
+```php
+CheckboxTree::make('permissions')
+    ->collapsible()
+    ->options([...])
+```
+
+Start with all sections collapsed:
+
+```php
+CheckboxTree::make('permissions')
+    ->collapsible(defaultCollapsed: true)
+    ->options([...])
+```
+
+### Search
+
+Enable search to filter tree items:
+
+```php
+CheckboxTree::make('permissions')
+    ->searchable()
+    ->options([...])
+```
+
+Customize the search placeholder:
+
+```php
+CheckboxTree::make('permissions')
+    ->searchable()
+    ->searchPrompt('Search permissions...')
+    ->options([...])
+```
+
+When searching, parent nodes are shown if any of their children match the search term.
+
+### Bulk Actions
+
+Enable "Select all / Deselect all" buttons:
+
+```php
+CheckboxTree::make('permissions')
+    ->bulkToggleable()
+    ->options([...])
+```
+
+Customize the action labels:
+
+```php
+CheckboxTree::make('technologies')
+    ->bulkToggleable()
+    ->selectAllAction(
+        fn ($action) => $action->label('Select all technologies')
+    )
+    ->deselectAllAction(
+        fn ($action) => $action->label('Clear selection')
+    )
+    ->options([...])
+```
+
 ## How It Works
 
 1. **Check a parent** - All children become checked, parent shows as checked
@@ -159,9 +225,6 @@ CheckboxTree::make('permissions')
 
 Future versions will include:
 
-- **Search** - Filter tree items by keyword (`->searchable()`)
-- **Collapsible sections** - Expand/collapse parent nodes (`->expandable()`)
-- **Bulk actions** - Select all / Deselect all buttons (`->bulkToggleable()`)
 - **Eloquent relationships** - Build tree from database models with `parent_id`
 - **Store options** - Choose whether to include parent keys in stored value
 

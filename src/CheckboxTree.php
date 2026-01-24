@@ -14,6 +14,62 @@ class CheckboxTree extends CheckboxList
 
     protected array $hierarchicalOptions = [];
 
+    protected bool $isCollapsible = false;
+
+    protected bool $defaultCollapsed = false;
+
+    /**
+     * Enable collapsible/collapsible parent nodes.
+     */
+    public function collapsible(bool $condition = true, bool $defaultCollapsed = false): static
+    {
+        $this->isCollapsible = $condition;
+        $this->defaultCollapsed = $defaultCollapsed;
+
+        return $this;
+    }
+
+    /**
+     * Check if the tree is collapsible.
+     */
+    public function isCollapsible(): bool
+    {
+        return $this->isCollapsible;
+    }
+
+    /**
+     * Check if nodes should be expanded by default.
+     */
+    public function isDefaultCollapsed(): bool
+    {
+        return $this->defaultCollapsed;
+    }
+
+    /**
+     * Get all parent keys (items that have children).
+     */
+    public function getParentKeys(): array
+    {
+        return $this->collectParentKeys($this->getHierarchicalOptions());
+    }
+
+    /**
+     * Recursively collect all parent keys.
+     */
+    protected function collectParentKeys(array $options): array
+    {
+        $parentKeys = [];
+
+        foreach ($options as $key => $option) {
+            if (is_array($option) && isset($option['children']) && !empty($option['children'])) {
+                $parentKeys[] = $key;
+                $parentKeys = array_merge($parentKeys, $this->collectParentKeys($option['children']));
+            }
+        }
+
+        return $parentKeys;
+    }
+
     /**
      * Enable hierarchical mode and optionally specify the parent key field name.
      */
