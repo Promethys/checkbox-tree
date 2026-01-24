@@ -61,7 +61,7 @@ class CheckboxTree extends CheckboxList
         $parentKeys = [];
 
         foreach ($options as $key => $option) {
-            if (is_array($option) && isset($option['children']) && !empty($option['children'])) {
+            if (is_array($option) && isset($option['children']) && ! empty($option['children'])) {
                 $parentKeys[] = $key;
                 $parentKeys = array_merge($parentKeys, $this->collectParentKeys($option['children']));
             }
