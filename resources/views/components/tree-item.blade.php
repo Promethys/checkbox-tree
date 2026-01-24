@@ -10,6 +10,7 @@
 @php
     $hasChildren = is_array($option) && isset($option['children']) && !empty($option['children']);
     $label = is_array($option) ? ($option['label'] ?? $key) : $option;
+    $description = is_array($option) ? ($option['description'] ?? null) : null;
     $children = $hasChildren ? $option['children'] : [];
     $indent = $level * 1.5;
     $escapedLabel = addslashes($label);
@@ -30,7 +31,7 @@
 
     $checkboxAttributeBag = \Filament\Support\prepare_inherited_attributes(
         new \Illuminate\View\ComponentAttributeBag($checkboxAttributes)
-    )->class(['mt-1']);
+    )->class(['mt-1 shrink-0']);
 @endphp
 
 <div
@@ -64,13 +65,25 @@
         <label class="flex gap-x-3">
             <x-filament::input.checkbox :attributes="$checkboxAttributeBag" />
 
-            <span @class([
-                'text-sm leading-6',
-                'font-medium text-gray-950 dark:text-white' => ! $disabled,
-                'text-gray-500 dark:text-gray-400' => $disabled,
-            ])>
-                {{ $label }}
-            </span>
+            <div class="flex flex-col">
+                <span @class([
+                    'text-sm leading-6',
+                    'font-medium text-gray-950 dark:text-white' => ! $disabled,
+                    'text-gray-500 dark:text-gray-400' => $disabled,
+                ])>
+                    {{ $label }}
+                </span>
+
+                @if ($description)
+                    <span @class([
+                        'text-xs leading-5',
+                        'text-gray-500 dark:text-gray-400' => ! $disabled,
+                        'text-gray-400 dark:text-gray-500' => $disabled,
+                    ])>
+                        {{ $description }}
+                    </span>
+                @endif
+            </div>
         </label>
     </div>
 

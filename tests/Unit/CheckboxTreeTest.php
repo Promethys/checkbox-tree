@@ -532,6 +532,51 @@ class CheckboxTreeTest extends TestCase
         $this->assertTrue($field->shouldStoreParentKeys());
     }
 
+    // ==========================================
+    // Description Support Tests
+    // ==========================================
+
+    /** @test */
+    public function it_preserves_description_in_hierarchical_options()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->options([
+                'admin' => [
+                    'label' => 'Administrator',
+                    'description' => 'Full system access',
+                    'children' => [
+                        'manage_users' => [
+                            'label' => 'Manage Users',
+                            'description' => 'Create, edit, delete users',
+                        ],
+                    ],
+                ],
+            ]);
+
+        $options = $field->getHierarchicalOptions();
+
+        $this->assertEquals('Full system access', $options['admin']['description']);
+        $this->assertEquals('Create, edit, delete users', $options['admin']['children']['manage_users']['description']);
+    }
+
+    /** @test */
+    public function it_handles_options_without_description()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->options([
+                'admin' => [
+                    'label' => 'Administrator',
+                    'children' => [
+                        'manage_users' => 'Manage Users',
+                    ],
+                ],
+            ]);
+
+        $options = $field->getHierarchicalOptions();
+
+        $this->assertArrayNotHasKey('description', $options['admin']);
+    }
+
     /**
      * Helper method to access private/protected properties
      */
