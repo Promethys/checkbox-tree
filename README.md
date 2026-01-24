@@ -1,43 +1,77 @@
 # Filament Checkbox Tree
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/promethys/checkbox-tree.svg?style=flat-square)](https://packagist.org/packages/promethys/checkbox-tree)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/promethys/checkbox-tree/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/promethys/checkbox-tree/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/promethys/checkbox-tree/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/promethys/checkbox-tree/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/promethys/checkbox-tree.svg?style=flat-square)](https://packagist.org/packages/promethys/checkbox-tree)
 
-A powerful Filament form component that provides hierarchical checkbox selection with parent-child relationships, perfect for permission systems, category management, and any nested data structures.
+A hierarchical checkbox tree component for Filament v3 forms. Display checkboxes in a parent-child tree structure with automatic state management.
 
 ## Features
 
-- 🌳 **Hierarchical Structure** - Unlimited nesting levels with parent-child relationships
-- 🎯 **Smart Selection** - Parent checkboxes automatically select/deselect all children
-- ⚡ **Indeterminate State** - Visual indication when only some children are selected
-- 🔍 **Search & Filter** - Real-time filtering of tree options
-- 📁 **Collapsible Sections** - Expand/collapse parent nodes
-- ✅ **Bulk Actions** - Select all / Deselect all functionality
-- 🔗 **Eloquent Integration** - Works seamlessly with Laravel relationships
-- 🌙 **Dark Mode** - Full support for Filament's dark mode
-- ♿ **Accessible** - Keyboard navigation and screen reader support
+- **Hierarchical Structure** - Display checkboxes in unlimited nested levels
+- **Parent-Child Control** - Checking a parent automatically selects all children
+- **Indeterminate States** - Visual indication when only some children are selected
+- **Collapsible Sections** - Expand/collapse parent nodes with smooth animations
+- **Search** - Filter tree items by keyword, shows parents when children match
+- **Bulk Actions** - Select all / Deselect all buttons with customizable labels
+- **Native Filament Styling** - Uses Filament's checkbox component, works with custom themes
+- **Dark Mode Support** - Fully compatible with Filament's dark mode
+- **Flat Array Storage** - Stores selections as a simple array, compatible with JSON columns and relationships
+
+## Visual Preview
+
+```
+[x] User Management              (all children selected)
+    [x] Create Users
+    [x] Edit Users
+    [x] Delete Users
+
+[-] Content Management           (some children selected - indeterminate)
+    [x] Create Posts
+    [x] Edit Posts
+    [ ] Delete Posts
+
+[ ] Analytics                    (no children selected)
+    [ ] View Reports
+    [ ] Export Data
+```
+
+## Use Cases
+
+- Permission management with grouped permissions
+- Category/subcategory selection
+- Feature flags with hierarchical options
+- Department/team hierarchies
+- Any multi-level checkbox selection
 
 ## Requirements
 
-- PHP 8.1 or higher
-- Filament 3.x
+- PHP 8.1+
 - Laravel 10.x or 11.x
+- Filament 3.x
 
 ## Installation
 
-Install the package via composer:
+Install via Composer:
 
 ```bash
 composer require promethys/checkbox-tree
 ```
 
-The package will automatically register its service provider.
+Publish Filament assets (required):
 
-## Basic Usage
+```bash
+php artisan filament:assets
+```
 
-### Simple Nested Structure
+Clear caches:
+
+```bash
+php artisan optimize:clear
+```
+
+## Data Structure
+
+The selected values are stored as a flat array of keys, making it easy to work with:
 
 ```php
 use Promethys\CheckboxTree\CheckboxTree;
@@ -64,65 +98,102 @@ CheckboxTree::make('permissions')
     ])
 ```
 
-### With Eloquent Relationships
+### Stored Data Format
+
+Selections are stored as a flat array:
 
 ```php
-CheckboxTree::make('permissions')
-    ->relationship('permissions', 'name')
-    ->hierarchical('parent_id')
+['user_management', 'create_users', 'edit_users', 'delete_users']
 ```
 
-### Building Tree from Flat Data
+This works seamlessly with:
+- JSON database columns
+- Pivot tables via Filament relationships
+- Simple array storage
 
-If you have flat data with parent references, enable hierarchical mode:
+### Multi-Level Nesting
+
+The component supports unlimited nesting depth:
 
 ```php
 CheckboxTree::make('categories')
-    ->hierarchical('parent_id')
     ->options([
-        1 => ['label' => 'Electronics', 'parent_id' => null],
-        2 => ['label' => 'Computers', 'parent_id' => 1],
-        3 => ['label' => 'Laptops', 'parent_id' => 2],
-        4 => ['label' => 'Desktops', 'parent_id' => 2],
-        5 => ['label' => 'Phones', 'parent_id' => 1],
+        'electronics' => [
+            'label' => 'Electronics',
+            'children' => [
+                'computers' => [
+                    'label' => 'Computers',
+                    'children' => [
+                        'laptops' => 'Laptops',
+                        'desktops' => 'Desktops',
+                    ],
+                ],
+                'phones' => 'Mobile Phones',
+            ],
+        ],
     ])
 ```
 
-## Advanced Features
+### With Validation
 
-### Search Functionality
-
-Add a search input to filter options in real-time:
+Standard Filament validation works:
 
 ```php
 CheckboxTree::make('permissions')
-    ->searchable()
+    ->required()
     ->options([...])
+```
 
-// Custom search placeholder
+### Disabled State
+
+```php
 CheckboxTree::make('permissions')
-    ->searchable('Search permissions...')
+    ->disabled()
     ->options([...])
 ```
 
 ### Collapsible Sections
 
-Allow users to expand/collapse parent nodes:
+Enable collapsible parent nodes:
 
 ```php
 CheckboxTree::make('permissions')
-    ->expandable()
-    ->options([...])
-
-// Expanded by default
-CheckboxTree::make('permissions')
-    ->expandable(defaultExpanded: true)
+    ->collapsible()
     ->options([...])
 ```
+
+Start with all sections collapsed:
+
+```php
+CheckboxTree::make('permissions')
+    ->collapsible(defaultCollapsed: true)
+    ->options([...])
+```
+
+### Search
+
+Enable search to filter tree items:
+
+```php
+CheckboxTree::make('permissions')
+    ->searchable()
+    ->options([...])
+```
+
+Customize the search placeholder:
+
+```php
+CheckboxTree::make('permissions')
+    ->searchable()
+    ->searchPrompt('Search permissions...')
+    ->options([...])
+```
+
+When searching, parent nodes are shown if any of their children match the search term.
 
 ### Bulk Actions
 
-Add "Select all" and "Deselect all" buttons:
+Enable "Select all / Deselect all" buttons:
 
 ```php
 CheckboxTree::make('permissions')
@@ -130,116 +201,60 @@ CheckboxTree::make('permissions')
     ->options([...])
 ```
 
-### Complete Example
-
-Combine all features for a full-featured tree:
+Customize the action labels:
 
 ```php
-CheckboxTree::make('permissions')
-    ->relationship('permissions', 'name')
-    ->hierarchical('parent_id')
-    ->searchable('Search permissions...')
-    ->expandable(defaultExpanded: false)
+CheckboxTree::make('technologies')
     ->bulkToggleable()
-```
-
-## Working with Relationships
-
-### BelongsToMany Example
-
-```php
-// In your model
-public function permissions(): BelongsToMany
-{
-    return $this->belongsToMany(Permission::class);
-}
-
-// In your form
-CheckboxTree::make('permissions')
-    ->relationship('permissions', 'name')
-    ->hierarchical('parent_id')
-```
-
-### Custom Query Modification
-
-```php
-CheckboxTree::make('permissions')
-    ->relationship(
-        name: 'permissions',
-        titleAttribute: 'name',
-        modifyQueryUsing: fn ($query) => $query->where('active', true)
+    ->selectAllAction(
+        fn ($action) => $action->label('Select all technologies')
     )
-    ->hierarchical('parent_id')
+    ->deselectAllAction(
+        fn ($action) => $action->label('Clear selection')
+    )
+    ->options([...])
 ```
 
-## Data Structure
+## How It Works
 
-The selected values are stored as a flat array of keys, making it easy to work with:
+1. **Check a parent** - All children become checked, parent shows as checked
+2. **Uncheck a parent** - All children become unchecked
+3. **Check some children** - Parent shows indeterminate state (dash)
+4. **Check all children** - Parent automatically becomes checked
+5. **Uncheck all children** - Parent automatically becomes unchecked
 
-```php
-// Selected: User Management (parent) + all its children
-['user_management', 'create_users', 'edit_users', 'delete_users']
+## Roadmap
 
-// This works seamlessly with BelongsToMany relationships
-$record->permissions()->sync($data['permissions']);
-```
+Future versions will include:
 
-## Styling
+- **Eloquent relationships** - Build tree from database models with `parent_id`
+- **Store options** - Choose whether to include parent keys in stored value
 
-The component automatically inherits your Filament theme colors and adapts to dark mode. The tree structure uses proper indentation and visual hierarchy.
-
-### Indeterminate State
-
-When a parent has some (but not all) children selected, it displays an indeterminate state with a dash icon instead of a checkmark.
-
-## API Reference
-
-### Methods
-
-| Method | Description |
-|--------|-------------|
-| `hierarchical(string $parentKey = 'parent_id')` | Enable hierarchical mode and specify the parent key field |
-| `searchable(bool\|string $condition = true)` | Enable search functionality with optional custom placeholder |
-| `expandable(bool $condition = true, bool $defaultExpanded = false)` | Enable collapsible sections |
-| `bulkToggleable(bool $condition = true)` | Enable select all / deselect all buttons |
-| `relationship(string $name, string $titleAttribute, ?callable $modifyQueryUsing = null)` | Work with Eloquent relationships |
-
-All standard Filament field methods are also available: `label()`, `required()`, `disabled()`, `default()`, `helperText()`, etc.
-
-## Use Cases
-
-Perfect for:
-- **Permission Management** - Group permissions by modules with sub-permissions
-- **Category Selection** - Hierarchical categories and subcategories
-- **Feature Flags** - Grouped feature toggles
-- **Organization Structures** - Departments, teams, and sub-teams
-- **Menu Management** - Nested menu items
-- **Product Categories** - Multi-level product categorization
-- **Tag Systems** - Hierarchical tagging
-
-## Testing
+## Development
 
 ```bash
+# Clone the repository
+git clone https://github.com/promethys/checkbox-tree.git
+
+# Install dependencies
+composer install
+npm install
+
+# Build assets
+npm run build
+
+# Run tests
 composer test
 ```
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+See [CHANGELOG](CHANGELOG.md) for recent changes.
 
 ## Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [Ilainiriko Tambaza](https://github.com/nirine1)
-- [All Contributors](../../contributors)
+Contributions are welcome! Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). See [LICENSE](LICENSE.md) for more information.

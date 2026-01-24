@@ -3,59 +3,90 @@
     'option',
     'disabled' => false,
     'level' => 0,
+    'searchable' => false,
+    'collapsible' => false,
 ])
 
 @php
-    $hasChildren = is_array($option) && isset($option['children']);
+    $hasChildren = is_array($option) && isset($option['children']) && !empty($option['children']);
     $label = is_array($option) ? ($option['label'] ?? $key) : $option;
     $children = $hasChildren ? $option['children'] : [];
-    $indent = $level * 1.5; // 1.5rem per level
+    $indent = $level * 1.5;
+    $escapedLabel = addslashes($label);
+
+    $checkboxAttributes = [
+        'disabled' => $disabled,
+        'value' => $key,
+    ];
+
+    if ($hasChildren) {
+        $checkboxAttributes['x-on:change'] = "toggleParent('{$key}')";
+        $checkboxAttributes['x-bind:checked'] = "isParentChecked('{$key}')";
+        $checkboxAttributes['x-bind:indeterminate'] = "isIndeterminate('{$key}')";
+    } else {
+        $checkboxAttributes['x-on:change'] = "toggleChild('{$key}')";
+        $checkboxAttributes['x-bind:checked'] = "isChecked('{$key}')";
+    }
+
+    $checkboxAttributeBag = \Filament\Support\prepare_inherited_attributes(
+        new \Illuminate\View\ComponentAttributeBag($checkboxAttributes)
+    )->class(['mt-1']);
 @endphp
 
-<div class="filament-forms-checkbox-tree-item">
-    <div
-        class="flex items-center gap-x-3"
-        style="padding-left: {{ $indent }}rem;"
-    >
-        <input
-            type="checkbox"
-            value="{{ $key }}"
-            id="checkbox-{{ $key }}"
-            @if($hasChildren)
-                x-on:change="toggleParent('{{ $key }}')"
-                x-bind:checked="isParentChecked('{{ $key }}')"
-                x-bind:indeterminate="isIndeterminate('{{ $key }}')"
-            @else
-                x-on:change="toggleChild('{{ $key }}')"
-                x-bind:checked="isChecked('{{ $key }}')"
-            @endif
-            @disabled($disabled)
-            class="filament-forms-checkbox-list-component-option-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:ring focus:ring-primary-500 focus:ring-opacity-50 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-70 dark:border-gray-600 dark:bg-gray-700 dark:checked:border-primary-600 dark:checked:bg-primary-600 dark:focus:ring-primary-600"
-        />
+<div
+    class="fi-fo-checkbox-tree-item"
+    @if ($searchable) x-show="isItemVisible('{{ $key }}', '{{ $escapedLabel }}')" @endif
+>
+    <div class="flex gap-x-1" style="padding-left: {{ $indent }}rem;">
+        @if ($collapsible && $hasChildren)
+            <button
+                type="button"
+                x-on:click="toggleCollapsed('{{ $key }}')"
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+            >
+                <x-filament::icon
+                    x-show="! isCollapsed('{{ $key }}')"
+                    icon="heroicon-m-chevron-down"
+                    class="h-4 w-4"
+                />
+                <x-filament::icon
+                    x-show="isCollapsed('{{ $key }}')"
+                    x-cloak
+                    icon="heroicon-m-chevron-right"
+                    class="h-4 w-4"
+                />
+            </button>
+        @elseif ($collapsible)
+            {{-- Spacer for alignment when item has no children --}}
+            <div class="w-6 shrink-0"></div>
+        @endif
 
-        <label
-            for="checkbox-{{ $key }}"
-            @class([
-                'text-sm font-medium leading-6',
-                'text-gray-950 dark:text-white' => ! $disabled,
+        <label class="flex gap-x-3">
+            <x-filament::input.checkbox :attributes="$checkboxAttributeBag" />
+
+            <span @class([
+                'text-sm leading-6',
+                'font-medium text-gray-950 dark:text-white' => ! $disabled,
                 'text-gray-500 dark:text-gray-400' => $disabled,
-                'cursor-pointer' => ! $disabled,
-                'cursor-not-allowed' => $disabled,
-                'font-semibold' => $hasChildren,
-            ])
-        >
-            {{ $label }}
+            ])>
+                {{ $label }}
+            </span>
         </label>
     </div>
 
     @if($hasChildren)
-        <div class="mt-2 space-y-2">
+        <div
+            class="mt-2 space-y-2"
+            @if ($collapsible) x-show="! isCollapsed('{{ $key }}')" x-collapse @endif
+        >
             @foreach($children as $childKey => $childOption)
                 <x-checkbox-tree::tree-item
                     :key="$childKey"
                     :option="$childOption"
                     :disabled="$disabled"
                     :level="$level + 1"
+                    :searchable="$searchable"
+                    :collapsible="$collapsible"
                 />
             @endforeach
         </div>

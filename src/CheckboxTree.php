@@ -3,8 +3,6 @@
 namespace Promethys\CheckboxTree;
 
 use Filament\Forms\Components\CheckboxList;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 
 class CheckboxTree extends CheckboxList
 {
@@ -16,19 +14,61 @@ class CheckboxTree extends CheckboxList
 
     protected array $hierarchicalOptions = [];
 
-    protected ?string $relationshipTitleAttribute = null;
+    protected bool $isCollapsible = false;
 
-    protected $modifyRelationshipQueryUsing = null;
+    protected bool $defaultCollapsed = false;
 
-    protected bool $isSearchable = false;
+    /**
+     * Enable collapsible/collapsible parent nodes.
+     */
+    public function collapsible(bool $condition = true, bool $defaultCollapsed = false): static
+    {
+        $this->isCollapsible = $condition;
+        $this->defaultCollapsed = $defaultCollapsed;
 
-    protected ?string $searchPrompt = null;
+        return $this;
+    }
 
-    protected bool $isExpandable = false;
+    /**
+     * Check if the tree is collapsible.
+     */
+    public function isCollapsible(): bool
+    {
+        return $this->isCollapsible;
+    }
 
-    protected bool $defaultExpanded = false;
+    /**
+     * Check if nodes should be expanded by default.
+     */
+    public function isDefaultCollapsed(): bool
+    {
+        return $this->defaultCollapsed;
+    }
 
-    protected bool $isBulkToggleable = false;
+    /**
+     * Get all parent keys (items that have children).
+     */
+    public function getParentKeys(): array
+    {
+        return $this->collectParentKeys($this->getHierarchicalOptions());
+    }
+
+    /**
+     * Recursively collect all parent keys.
+     */
+    protected function collectParentKeys(array $options): array
+    {
+        $parentKeys = [];
+
+        foreach ($options as $key => $option) {
+            if (is_array($option) && isset($option['children']) && !empty($option['children'])) {
+                $parentKeys[] = $key;
+                $parentKeys = array_merge($parentKeys, $this->collectParentKeys($option['children']));
+            }
+        }
+
+        return $parentKeys;
+    }
 
     /**
      * Enable hierarchical mode and optionally specify the parent key field name.

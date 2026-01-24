@@ -5,16 +5,13 @@ namespace Promethys\CheckboxTree;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
-use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
 use Livewire\Features\SupportTesting\Testable;
-use Promethys\CheckboxTree\Commands\CheckboxTreeCommand;
-use Promethys\CheckboxTree\Testing\TestsCheckboxTree;
-use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Promethys\CheckboxTree\Testing\TestsCheckboxTree;
 
 class CheckboxTreeServiceProvider extends PackageServiceProvider
 {
@@ -29,29 +26,7 @@ class CheckboxTreeServiceProvider extends PackageServiceProvider
          *
          * More info: https://github.com/spatie/laravel-package-tools
          */
-        $package->name(static::$name)
-            ->hasCommands($this->getCommands())
-            ->hasInstallCommand(function (InstallCommand $command) {
-                $command
-                    ->publishConfigFile()
-                    ->publishMigrations()
-                    ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub('promethys/checkbox-tree');
-            });
-
-        $configFileName = $package->shortName();
-
-        if (file_exists($package->basePath("/../config/{$configFileName}.php"))) {
-            $package->hasConfigFile();
-        }
-
-        if (file_exists($package->basePath('/../database/migrations'))) {
-            $package->hasMigrations($this->getMigrations());
-        }
-
-        if (file_exists($package->basePath('/../resources/lang'))) {
-            $package->hasTranslations();
-        }
+        $package->name(static::$name);
 
         if (file_exists($package->basePath('/../resources/views'))) {
             $package->hasViews(static::$viewNamespace);
@@ -76,13 +51,18 @@ class CheckboxTreeServiceProvider extends PackageServiceProvider
         // Icon Registration
         FilamentIcon::register($this->getIcons());
 
-        // Handle Stubs
+        // Handle Stubs and Asset Publishing
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
                     $file->getRealPath() => base_path("stubs/checkbox-tree/{$file->getFilename()}"),
                 ], 'checkbox-tree-stubs');
             }
+
+            // Publish assets for manual publishing if needed
+            $this->publishes([
+                __DIR__ . '/../resources/dist' => public_path('vendor/checkbox-tree'),
+            ], 'checkbox-tree-assets');
         }
 
         // Testing
@@ -100,19 +80,8 @@ class CheckboxTreeServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            // AlpineComponent::make('checkbox-tree', __DIR__ . '/../resources/dist/components/checkbox-tree.js'),
+            AlpineComponent::make('checkbox-tree', __DIR__ . '/../resources/dist/checkbox-tree.js'),
             Css::make('checkbox-tree-styles', __DIR__ . '/../resources/dist/checkbox-tree.css'),
-            Js::make('checkbox-tree-scripts', __DIR__ . '/../resources/dist/checkbox-tree.js'),
-        ];
-    }
-
-    /**
-     * @return array<class-string>
-     */
-    protected function getCommands(): array
-    {
-        return [
-            CheckboxTreeCommand::class,
         ];
     }
 
@@ -138,15 +107,5 @@ class CheckboxTreeServiceProvider extends PackageServiceProvider
     protected function getScriptData(): array
     {
         return [];
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected function getMigrations(): array
-    {
-        return [
-            'create_checkbox-tree_table',
-        ];
     }
 }
