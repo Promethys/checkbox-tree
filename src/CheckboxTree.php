@@ -124,6 +124,11 @@ class CheckboxTree extends CheckboxList
 
     /**
      * Get the hierarchical options structure for the view.
+     *
+     * Handles three formats:
+     * 1. Already nested structure with 'children' keys
+     * 2. Flat structure with parent_id (when hierarchical() is enabled)
+     * 3. Mixed format (both nested and flat items)
      */
     public function getHierarchicalOptions(): array
     {
@@ -133,6 +138,29 @@ class CheckboxTree extends CheckboxList
 
         $options = $this->getOptions();
 
+        // If hierarchical mode is enabled, process flat options
+        if ($this->isHierarchical) {
+            // Separate already-nested items from flat items
+            $nestedItems = [];
+            $flatItems = [];
+
+            foreach ($options as $key => $option) {
+                if (is_array($option) && isset($option['children'])) {
+                    // Already nested, keep as-is
+                    $nestedItems[$key] = $option;
+                } else {
+                    // Flat item, needs to be built into tree
+                    $flatItems[$key] = $option;
+                }
+            }
+
+            // Build tree from flat items and merge with nested items
+            $builtTree = ! empty($flatItems) ? $this->buildTree($flatItems) : [];
+            $this->hierarchicalOptions = array_merge($nestedItems, $builtTree);
+
+            return $this->hierarchicalOptions;
+        }
+
         // If options are already in hierarchical format, use them directly
         if ($this->hasNestedStructure($options)) {
             $this->hierarchicalOptions = $options;
@@ -140,13 +168,7 @@ class CheckboxTree extends CheckboxList
             return $options;
         }
 
-        // Otherwise, build tree from flat options
-        if ($this->isHierarchical) {
-            $this->hierarchicalOptions = $this->buildTree($options);
-
-            return $this->hierarchicalOptions;
-        }
-
+        // Plain options without hierarchy
         return $options;
     }
 
@@ -166,26 +188,39 @@ class CheckboxTree extends CheckboxList
 
     /**
      * Build a tree structure from flat options array.
+     *
+     * Converts flat options with parent_id references into a nested tree structure.
+     * Items with parent_id = null are treated as root items.
+     *
+     * @param  array  $items  Flat array of options with parent_id references
+     * @param  mixed  $parentId  Current parent level (null for root)
+     * @return array Nested tree structure
      */
-    protected function buildTree(array $items, $parentId = null): array
+    protected function buildTree(array $items, mixed $parentId = null): array
     {
         $tree = [];
 
         foreach ($items as $key => $item) {
-            // Handle both array items and simple key-value pairs
-            $itemParentId = is_array($item) ? ($item[$this->parentKey] ?? null) : null;
+            // Determine the parent ID for this item
+            // Use array_key_exists to distinguish between null and not set
+            $itemParentId = null;
+            if (is_array($item) && array_key_exists($this->parentKey, $item)) {
+                $itemParentId = $item[$this->parentKey];
+            }
 
+            // Match items to the current parent level
             if ($itemParentId === $parentId) {
-                $label = is_array($item) ? ($item['label'] ?? $item['name'] ?? $key) : $item;
+                // Extract label with multiple fallbacks
+                $label = $this->extractLabel($item, (string) $key);
 
-                $node = [
-                    'label' => $label,
-                    'children' => $this->buildTree($items, $key),
-                ];
+                // Recursively build children
+                $children = $this->buildTree($items, $key);
+
+                $node = ['label' => $label];
 
                 // Only add children key if there are actually children
-                if (empty($node['children'])) {
-                    unset($node['children']);
+                if (! empty($children)) {
+                    $node['children'] = $children;
                 }
 
                 $tree[$key] = $node;
@@ -193,6 +228,29 @@ class CheckboxTree extends CheckboxList
         }
 
         return $tree;
+    }
+
+    /**
+     * Extract label from an option item with multiple fallbacks.
+     *
+     * Supports various formats:
+     * - String: 'Label'
+     * - Array with 'label': ['label' => 'Label', 'parent_id' => null]
+     * - Array with 'name': ['name' => 'Name', 'parent_id' => null]
+     * - Array with 'title': ['title' => 'Title', 'parent_id' => null]
+     * - Falls back to key if no label field found
+     */
+    protected function extractLabel(mixed $item, string $key): string
+    {
+        if (is_string($item)) {
+            return $item;
+        }
+
+        if (is_array($item)) {
+            return $item['label'] ?? $item['name'] ?? $item['title'] ?? $key;
+        }
+
+        return $key;
     }
 
     /**

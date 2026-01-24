@@ -119,6 +119,27 @@ CheckboxTree::make('permissions')
 // Stored value: ['user_management', 'create_users', 'edit_users', 'delete_users']
 ```
 
+### Flat Options with parent_id
+
+You can provide flat options with `parent_id` references instead of manually nesting:
+
+```php
+CheckboxTree::make('permissions')
+    ->hierarchical('parent_id')
+    ->options([
+        'user_management' => ['label' => 'User Management', 'parent_id' => null],
+        'create_users' => ['label' => 'Create Users', 'parent_id' => 'user_management'],
+        'edit_users' => ['label' => 'Edit Users', 'parent_id' => 'user_management'],
+        'delete_users' => ['label' => 'Delete Users', 'parent_id' => 'user_management'],
+        'post_management' => ['label' => 'Post Management', 'parent_id' => null],
+        'create_posts' => ['label' => 'Create Posts', 'parent_id' => 'post_management'],
+    ])
+```
+
+The component automatically builds the tree structure. Items with `parent_id => null` become root items.
+
+Supported label fields (in priority order): `label`, `name`, `title`, or falls back to the array key.
+
 ### Multi-Level Nesting
 
 The component supports unlimited nesting depth:
@@ -247,7 +268,7 @@ This is useful when you need to know which parent categories were selected, not 
 
 Future versions will include:
 
-- **Eloquent relationships** - Build tree from database models with `parent_id`
+- **Eloquent relationships** - Build tree from database relationships with `->relationship()`
 
 ## Development
 
