@@ -140,6 +140,29 @@ The component automatically builds the tree structure. Items with `parent_id => 
 
 Supported label fields (in priority order): `label`, `name`, `title`, or falls back to the array key.
 
+### Descriptions
+
+Add description text below checkbox labels:
+
+```php
+CheckboxTree::make('permissions')
+    ->options([
+        'admin' => [
+            'label' => 'Administrator',
+            'description' => 'Full system access',
+            'children' => [
+                'manage_users' => [
+                    'label' => 'Manage Users',
+                    'description' => 'Create, edit, and delete users',
+                ],
+                'manage_settings' => 'Manage Settings',
+            ],
+        ],
+    ])
+```
+
+Descriptions are optional and displayed in smaller, muted text below the label.
+
 ### Multi-Level Nesting
 
 The component supports unlimited nesting depth:
