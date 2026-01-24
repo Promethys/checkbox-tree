@@ -5,7 +5,6 @@ namespace Promethys\CheckboxTree;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
-use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
@@ -76,13 +75,18 @@ class CheckboxTreeServiceProvider extends PackageServiceProvider
         // Icon Registration
         FilamentIcon::register($this->getIcons());
 
-        // Handle Stubs
+        // Handle Stubs and Asset Publishing
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
                     $file->getRealPath() => base_path("stubs/checkbox-tree/{$file->getFilename()}"),
                 ], 'checkbox-tree-stubs');
             }
+
+            // Publish assets for manual publishing if needed
+            $this->publishes([
+                __DIR__ . '/../resources/dist' => public_path('vendor/checkbox-tree'),
+            ], 'checkbox-tree-assets');
         }
 
         // Testing
@@ -100,9 +104,8 @@ class CheckboxTreeServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            // AlpineComponent::make('checkbox-tree', __DIR__ . '/../resources/dist/components/checkbox-tree.js'),
+            AlpineComponent::make('checkbox-tree', __DIR__ . '/../resources/dist/checkbox-tree.js'),
             Css::make('checkbox-tree-styles', __DIR__ . '/../resources/dist/checkbox-tree.css'),
-            Js::make('checkbox-tree-scripts', __DIR__ . '/../resources/dist/checkbox-tree.js'),
         ];
     }
 

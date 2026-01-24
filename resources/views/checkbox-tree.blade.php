@@ -1,5 +1,5 @@
 @php
-    use Filament\Support\Facades\FilamentView;
+    use Filament\Support\Facades\FilamentAsset;
 
     $id = $getId();
     $isDisabled = $isDisabled();
@@ -10,19 +10,19 @@
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
     <div
+        x-ignore
+        x-load
+        x-load-src="{{ FilamentAsset::getAlpineComponentSrc('checkbox-tree', 'promethys/checkbox-tree') }}"
         x-data="checkboxTreeFormComponent({
             state: $wire.{{ $applyStateBindingModifiers("\$entangle('{$statePath}')") }},
             options: @js($hierarchicalOptions),
             indeterminateItems: @js($indeterminateItems),
         })"
         {{ $attributes->merge($getExtraAttributes(), escape: false)->class([
-            'filament-forms-checkbox-tree-component',
+            'fi-fo-checkbox-tree',
         ]) }}
     >
-        <div @class([
-            'space-y-2',
-            'opacity-70' => $isDisabled,
-        ])>
+        <div class="space-y-2">
             @foreach ($hierarchicalOptions as $key => $option)
                 <x-checkbox-tree::tree-item
                     :key="$key"
