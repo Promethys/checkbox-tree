@@ -456,6 +456,82 @@ class CheckboxTreeTest extends TestCase
         $this->assertEquals('Primary Label', $options['item']['label']);
     }
 
+    // ==========================================
+    // Relationship Support Tests
+    // ==========================================
+
+    /** @test */
+    public function it_can_set_relationship_name()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->relationship('permissions', 'name');
+
+        $this->assertEquals('permissions', $field->getRelationshipName());
+    }
+
+    /** @test */
+    public function it_uses_field_name_as_relationship_name_when_not_specified()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->relationship(titleAttribute: 'name');
+
+        $this->assertEquals('permissions', $field->getRelationshipName());
+    }
+
+    /** @test */
+    public function it_enables_hierarchical_mode_when_relationship_is_set()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->relationship('permissions', 'name');
+
+        $this->assertTrue($this->getPrivateProperty($field, 'isHierarchical'));
+    }
+
+    /** @test */
+    public function it_can_set_relationship_title_attribute()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->relationship('permissions', 'display_name');
+
+        $this->assertEquals('display_name', $field->getRelationshipTitleAttribute());
+    }
+
+    /** @test */
+    public function it_returns_null_relationship_when_not_set()
+    {
+        $field = CheckboxTree::make('permissions');
+
+        $this->assertNull($field->getRelationshipName());
+    }
+
+    /** @test */
+    public function it_can_chain_relationship_with_hierarchical()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->relationship('permissions', 'name')
+            ->hierarchical('category_id');
+
+        $this->assertEquals('permissions', $field->getRelationshipName());
+        $this->assertEquals('category_id', $this->getPrivateProperty($field, 'parentKey'));
+    }
+
+    /** @test */
+    public function it_can_chain_relationship_with_other_options()
+    {
+        $field = CheckboxTree::make('permissions')
+            ->relationship('permissions', 'name')
+            ->searchable()
+            ->collapsible()
+            ->bulkToggleable()
+            ->storeParentKeys();
+
+        $this->assertEquals('permissions', $field->getRelationshipName());
+        $this->assertTrue($field->isSearchable());
+        $this->assertTrue($field->isCollapsible());
+        $this->assertTrue($field->isBulkToggleable());
+        $this->assertTrue($field->shouldStoreParentKeys());
+    }
+
     /**
      * Helper method to access private/protected properties
      */

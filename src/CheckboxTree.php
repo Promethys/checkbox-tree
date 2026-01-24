@@ -2,7 +2,13 @@
 
 namespace Promethys\CheckboxTree;
 
+use Closure;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Support\Services\RelationshipJoiner;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Str;
 
 class CheckboxTree extends CheckboxList
 {
@@ -120,6 +126,175 @@ class CheckboxTree extends CheckboxList
         $this->parentKey = $parentKey;
 
         return $this;
+    }
+
+    /**
+     * Set up a BelongsToMany relationship for the checkbox tree.
+     *
+     * This overrides the parent's relationship() method to fetch records
+     * with their parent_id, enabling hierarchical tree building.
+     *
+     * @param  string|Closure|null  $name  The relationship name (defaults to field name)
+     * @param  string|Closure|null  $titleAttribute  The attribute to use as the label
+     * @param  Closure|null  $modifyQueryUsing  Callback to modify the query
+     */
+    public function relationship(
+        string | Closure | null $name = null,
+        string | Closure | null $titleAttribute = null,
+        ?Closure $modifyQueryUsing = null
+    ): static {
+        $this->relationship = $name ?? $this->getName();
+        $this->relationshipTitleAttribute = $titleAttribute;
+
+        // Enable hierarchical mode automatically when relationship is set
+        $this->isHierarchical = true;
+
+        // Set up options from relationship - returns flat array with parent_id for buildTree()
+        $this->options(static function (CheckboxTree $component) use ($modifyQueryUsing): array {
+            $relationship = Relation::noConstraints(fn () => $component->getRelationship());
+
+            if (! $relationship) {
+                return [];
+            }
+
+            /** @var \Illuminate\Database\Eloquent\Builder $relationshipQuery */
+            $relationshipQuery = app(RelationshipJoiner::class)->prepareQueryForNoConstraints($relationship);
+
+            if ($modifyQueryUsing) {
+                $relationshipQuery = $component->evaluate($modifyQueryUsing, [
+                    'query' => $relationshipQuery,
+                ]) ?? $relationshipQuery;
+            }
+
+            $records = $relationshipQuery->get();
+            $titleAttribute = $component->getRelationshipTitleAttribute();
+            $parentKey = $component->parentKey;
+            $keyName = Str::afterLast($relationship->getQualifiedRelatedKeyName(), '.');
+
+            // Build options with parent_id for hierarchical tree building
+            $options = [];
+            foreach ($records as $record) {
+                $key = strval($record->{$keyName});
+
+                // Use custom label callback if provided, otherwise use title attribute
+                if ($component->hasOptionLabelFromRecordUsingCallback()) {
+                    $label = $component->getOptionLabelFromRecord($record);
+                } else {
+                    $label = $record->{$titleAttribute};
+                }
+
+                $options[$key] = [
+                    'label' => $label,
+                    $parentKey => $record->{$parentKey} !== null ? strval($record->{$parentKey}) : null,
+                ];
+            }
+
+            return $options;
+        });
+
+        // Set up state hydration from relationship
+        $this->loadStateFromRelationshipsUsing(static function (CheckboxTree $component, ?array $state) use ($modifyQueryUsing): void {
+            $relationship = $component->getRelationship();
+
+            if (! $relationship) {
+                return;
+            }
+
+            if ($modifyQueryUsing) {
+                $component->evaluate($modifyQueryUsing, [
+                    'query' => $relationship->getQuery(),
+                ]);
+            }
+
+            /** @var Collection $relatedRecords */
+            $relatedRecords = $relationship->getResults();
+
+            $component->state(
+                $relatedRecords
+                    ->pluck($relationship->getRelatedKeyName())
+                    ->map(static fn ($key): string => strval($key))
+                    ->all(),
+            );
+        });
+
+        // Set up relationship saving
+        $this->saveRelationshipsUsing(static function (CheckboxTree $component, ?array $state) use ($modifyQueryUsing) {
+            $relationship = $component->getRelationship();
+
+            if (! $relationship) {
+                return;
+            }
+
+            if ($modifyQueryUsing) {
+                $component->evaluate($modifyQueryUsing, [
+                    'query' => $relationship->getQuery(),
+                ]);
+            }
+
+            // Filter out parent keys if storeParentKeys is false
+            if (! $component->shouldStoreParentKeys()) {
+                $parentKeys = $component->getParentKeys();
+                $state = array_values(array_filter($state ?? [], fn ($key) => ! in_array($key, $parentKeys, true)));
+            }
+
+            /** @var Collection $relatedRecords */
+            $relatedRecords = $relationship->getResults();
+
+            $recordsToDetach = array_diff(
+                $relatedRecords
+                    ->pluck($relationship->getRelatedKeyName())
+                    ->map(static fn ($key): string => strval($key))
+                    ->all(),
+                $state ?? [],
+            );
+
+            if (count($recordsToDetach) > 0) {
+                $relationship->detach($recordsToDetach);
+            }
+
+            $pivotData = $component->getPivotData();
+
+            if ($pivotData === []) {
+                $relationship->sync($state ?? [], detaching: false);
+
+                return;
+            }
+
+            $relationship->syncWithPivotValues($state ?? [], $pivotData, detaching: false);
+        });
+
+        // Don't dehydrate - relationship handles persistence
+        $this->dehydrated(false);
+
+        return $this;
+    }
+
+    /**
+     * Get the relationship instance.
+     */
+    public function getRelationship(): ?BelongsToMany
+    {
+        $name = $this->getRelationshipName();
+
+        if (blank($name)) {
+            return null;
+        }
+
+        $model = $this->getModelInstance();
+
+        if (! $model) {
+            return null;
+        }
+
+        return $model->{$name}();
+    }
+
+    /**
+     * Get the relationship name.
+     */
+    public function getRelationshipName(): ?string
+    {
+        return $this->evaluate($this->relationship);
     }
 
     /**

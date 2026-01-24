@@ -264,11 +264,39 @@ This is useful when you need to know which parent categories were selected, not 
 4. **Check all children** - Parent automatically becomes checked
 5. **Uncheck all children** - Parent automatically becomes unchecked
 
+### Eloquent Relationships
+
+Build a tree directly from a BelongsToMany relationship with hierarchical records:
+
+```php
+// Model: Permission has parent_id column
+CheckboxTree::make('permissions')
+    ->relationship('permissions', 'name')
+    ->hierarchical('parent_id')
+```
+
+The component will:
+1. Fetch all related records from the pivot table
+2. Build a tree structure based on `parent_id`
+3. Save selected values back to the pivot table
+
+With query modification:
+
+```php
+CheckboxTree::make('permissions')
+    ->relationship(
+        'permissions',
+        'name',
+        fn ($query) => $query->where('active', true)
+    )
+    ->hierarchical('parent_id')
+```
+
 ## Roadmap
 
-Future versions will include:
+Future versions may include:
 
-- **Eloquent relationships** - Build tree from database relationships with `->relationship()`
+- **HasMany relationships** - Support for HasMany in addition to BelongsToMany
 
 ## Development
 
