@@ -3,7 +3,6 @@
 namespace Promethys\CheckboxTree;
 
 use Filament\Forms\Components\CheckboxList;
-use Illuminate\Support\Arr;
 
 class CheckboxTree extends CheckboxList
 {
