@@ -5,6 +5,29 @@
 
 A hierarchical checkbox tree component for Filament v3 forms. Display checkboxes in a parent-child tree structure with automatic state management.
 
+## Architecture & Compatibility
+
+This component extends [Filament's native CheckboxList component](https://filamentphp.com/docs/3.x/forms/fields/checkbox-list), ensuring seamless integration with the Filament ecosystem while adding powerful hierarchical capabilities:
+
+**Preserved CheckboxList Features:**
+- All validation methods (`required()`, `rules()`, etc.)
+- Bulk actions (`bulkToggleable()`, `selectAllAction()`, `deselectAllAction()`)
+- Search functionality (`searchable()`, `searchPrompt()`)
+- Disabled state (`disabled()`)
+- Relationship handling (`relationship()`)
+- State management methods (`default()`, `dehydrateStateUsing()`)
+- HTML support (`allowHtml()`)
+- Full compatibility with Filament's styling system and dark mode
+
+**Enhanced for Hierarchical Use:**
+- **Descriptions**: Integrated directly into the options array structure for better organization
+- **State Management**: Intelligent parent-child state synchronization with indeterminate states
+- **Data Storage**: Configurable leaf-only or full hierarchy storage
+- **Tree Operations**: Collapsible sections and parent-child selection logic
+- **HTML support**: Support HTML on both labels and descriptions
+
+This architecture ensures you get all the familiar CheckboxList functionality plus powerful new features specifically designed for hierarchical data structures.
+
 ## Features
 
 - **Hierarchical Structure** - Display checkboxes in unlimited nested levels
@@ -17,7 +40,7 @@ A hierarchical checkbox tree component for Filament v3 forms. Display checkboxes
 - **Dark Mode Support** - Fully compatible with Filament's dark mode
 - **Flat Array Storage** - Stores selections as a simple array, compatible with JSON columns and relationships
 
-## Visual Preview
+## Visual Preview TODO: use a screenshot here
 
 ```
 [x] User Management              (all children selected)
@@ -33,7 +56,7 @@ A hierarchical checkbox tree component for Filament v3 forms. Display checkboxes
 [ ] Analytics                    (no children selected)
     [ ] View Reports
     [ ] Export Data
-```
+``` 
 
 ## Use Cases
 
@@ -46,7 +69,7 @@ A hierarchical checkbox tree component for Filament v3 forms. Display checkboxes
 ## Requirements
 
 - PHP 8.1+
-- Laravel 10.x or 11.x
+- Laravel 10.x+
 - Filament 3.x
 
 ## Installation

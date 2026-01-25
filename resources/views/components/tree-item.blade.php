@@ -5,6 +5,7 @@
     'level' => 0,
     'searchable' => false,
     'collapsible' => false,
+    'isHtmlAllowed' => false,
 ])
 
 @php
@@ -67,14 +68,22 @@
 
             <div class="grid text-sm leading-6">
                 <span class="fi-fo-checkbox-list-option-label overflow-hidden break-words font-medium text-gray-950 dark:text-white">
-                    {{ $label }}
+                    @if ($isHtmlAllowed)
+                        {!! $label !!}
+                    @else
+                        {{ $label }}
+                    @endif
                 </span>
 
                 @if ($description)
                     <p
                         class="fi-fo-checkbox-list-option-description text-gray-500 dark:text-gray-400"
                     >
-                        {{ $description }}
+                        @if ($isHtmlAllowed)
+                            {!! $description !!}
+                        @else
+                            {{ $description }}
+                        @endif
                     </p>
                 @endif
             </div>
@@ -94,6 +103,7 @@
                     :level="$level + 1"
                     :searchable="$searchable"
                     :collapsible="$collapsible"
+                    :is-html-allowed="$isHtmlAllowed"
                 />
             @endforeach
         </div>

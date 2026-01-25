@@ -93,6 +93,7 @@
                     :level="0"
                     :searchable="$isSearchable"
                     :collapsible="$isCollapsible"
+                    :is-html-allowed="$isHtmlAllowed()"
                 />
             @endforeach
         </div>
