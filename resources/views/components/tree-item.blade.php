@@ -32,7 +32,7 @@
 
     $checkboxAttributeBag = \Filament\Support\prepare_inherited_attributes(
         new \Illuminate\View\ComponentAttributeBag($checkboxAttributes)
-    )->class(['mt-1 shrink-0']);
+    )->class(['mt-1 shrink-0 break-inside-avoid']);
 @endphp
 
 <div

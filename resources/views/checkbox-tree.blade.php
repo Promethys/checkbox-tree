@@ -12,6 +12,7 @@
     $indeterminateItems = $getIndeterminateItems();
     $parentKeys = $getParentKeys();
     $storeParentKeys = $shouldStoreParentKeys();
+    $gridDirection = $getGridDirection() ?? 'column';
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
@@ -81,9 +82,22 @@
             </div>
         @endif
 
-        <div
-            class="space-y-2"
-            @if ($isSearchable) x-show="hasVisibleResults()" @endif
+        <x-filament::grid
+            :default="$getColumns('default')"
+            :sm="$getColumns('sm')"
+            :md="$getColumns('md')"
+            :lg="$getColumns('lg')"
+            :xl="$getColumns('xl')"
+            :two-xl="$getColumns('2xl')"
+            :direction="$gridDirection"
+            :x-show="$isSearchable ? 'hasVisibleResults()' : null"
+            :attributes="
+                \Filament\Support\prepare_inherited_attributes($attributes)
+                    ->merge($getExtraAttributes(), escape: false)
+                    ->class([
+                        'fi-fo-checkbox-list gap-4 space-y-2',
+                    ])
+            "
         >
             @foreach ($hierarchicalOptions as $key => $option)
                 <x-checkbox-tree::tree-item
@@ -96,7 +110,7 @@
                     :is-html-allowed="$isHtmlAllowed()"
                 />
             @endforeach
-        </div>
+        </x-filament::grid>
 
         @if ($isSearchable)
             <div

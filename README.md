@@ -17,6 +17,7 @@ This component extends [Filament's native CheckboxList component](https://filame
 - Relationship handling (`relationship()`)
 - State management methods (`default()`, `dehydrateStateUsing()`)
 - HTML support (`allowHtml()`)
+- Splitting options into columns (`columns()`, `gridDirection()`)
 - Full compatibility with Filament's styling system and dark mode
 
 **Enhanced for Hierarchical Use:**
