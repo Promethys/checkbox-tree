@@ -24,7 +24,6 @@ This component extends [Filament's native CheckboxList component](https://filame
 - **State Management**: Intelligent parent-child state synchronization with indeterminate states
 - **Data Storage**: Configurable leaf-only or full hierarchy storage
 - **Tree Operations**: Collapsible sections and parent-child selection logic
-- **HTML support**: Support HTML on both labels and descriptions
 
 This architecture ensures you get all the familiar CheckboxList functionality plus powerful new features specifically designed for hierarchical data structures.
 
@@ -185,6 +184,49 @@ CheckboxTree::make('permissions')
 ```
 
 Descriptions are optional and displayed in smaller, muted text below the label.
+
+### HTML Support
+
+By default, Filament escapes any HTML in option labels (native behavior inherited from CheckboxList). If you'd like to allow HTML, you can use the `allowHtml()` method. The plugin supports HTML formatting for both labels and descriptions:
+
+```php
+CheckboxTree::make('permissions')
+    ->options([
+        'admin' => [
+            'label' => '<span class="text-blue-500">Administrator</span>',
+            'description' => '<span class="text-xs">Full system access</span>',
+            'children' => [
+                'manage_users' => [
+                    'label' => '<span class="text-blue-500">Manage Users</span>',
+                    'description' => '<span class="text-xs">Create, edit, and delete users</span>',
+                ],
+                'manage_settings' => 'Manage Settings',
+            ],
+        ],
+    ])
+    ->allowHtml()
+```
+
+You can also use instances of `Illuminate\Support\HtmlString` or `Illuminate\Contracts\Support\Htmlable`. This approach provides better security and allows you to render HTML or even markdown:
+
+```php
+CheckboxTree::make('permissions')
+    ->options([
+        'admin' => [
+            'label' => new HtmlString('<strong>Administrator</strong>'),
+            'description' => str('**Full system** access')->inlineMarkdown()->toHtmlString(),
+            'children' => [
+                'manage_users' => [
+                    'label' => new HtmlString('<strong>Manage Users</strong>'),
+                    'description' => str('**Create**, **edit**, and **delete** users')->inlineMarkdown()->toHtmlString(),
+                ],
+                'manage_settings' => new HtmlString('<strong>Manage Settings</strong>'),
+            ],
+        ],
+    ])
+```
+
+> **Security Warning**: Always ensure that HTML content is safe to render. User-generated content should be properly sanitized to prevent XSS attacks.
 
 ### Multi-Level Nesting
 
