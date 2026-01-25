@@ -35,6 +35,11 @@ export default function checkboxTreeFormComponent({
             if (this.collapsible) {
                 this.collapsedItems = this.defaultCollapsed ? [...this.parentKeys] : []
             }
+
+            // Ensure indeterminate states are applied after initial render
+            this.$nextTick(() => {
+                this.updateIndeterminateStates()
+            })
         },
 
         /**
@@ -352,6 +357,20 @@ export default function checkboxTreeFormComponent({
          */
         updateIndeterminateStates() {
             this.indeterminateItems = this.calculateIndeterminateItems(this.options)
+
+            // Make Alpine update the DOM immediately
+            this.$nextTick(() => {
+                // Ensure all parent checkboxes get their indeterminate state updated
+                const parentCheckboxes = document.querySelectorAll('.fi-fo-checkbox-tree-item input[type="checkbox"][x-bind\\:indeterminate]')
+                parentCheckboxes.forEach(checkbox => {
+                    const key = checkbox.getAttribute('value')
+                    if (this.indeterminateItems.includes(key)) {
+                        checkbox.indeterminate = true
+                    } else {
+                        checkbox.indeterminate = false
+                    }
+                })
+            })
         },
 
         /**
