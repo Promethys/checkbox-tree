@@ -20,11 +20,11 @@ class CheckboxTree extends CheckboxList
 
     protected array $hierarchicalOptions = [];
 
-    protected bool | \Closure $isCollapsible = false;
+    protected bool | Closure $isCollapsible = false;
 
-    protected bool | \Closure $defaultCollapsed = false;
+    protected bool | Closure $defaultCollapsed = false;
 
-    protected bool | \Closure $storeParentKeys = false;
+    protected bool | Closure $storeParentKeys = false;
 
     protected function setUp(): void
     {
@@ -50,7 +50,7 @@ class CheckboxTree extends CheckboxList
      * Control whether parent keys are stored in the state.
      * Default is false (only leaf nodes are stored).
      */
-    public function storeParentKeys(bool | \Closure $condition = true): static
+    public function storeParentKeys(bool | Closure $condition = true): static
     {
         $this->storeParentKeys = $condition;
 
@@ -68,7 +68,7 @@ class CheckboxTree extends CheckboxList
     /**
      * Enable collapsible/collapsible parent nodes.
      */
-    public function collapsible(bool | \Closure $condition = true, bool | \Closure $defaultCollapsed = false): static
+    public function collapsible(bool | Closure $condition = true, bool | Closure $defaultCollapsed = false): static
     {
         $this->isCollapsible = $condition;
         $this->defaultCollapsed = $defaultCollapsed;
