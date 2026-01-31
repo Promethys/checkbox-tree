@@ -215,7 +215,8 @@ export default function checkboxTreeFormComponent({
          */
         updateAreAllSelected() {
             const allKeys = this.getAllKeys(this.options)
-            this.areAllSelected = allKeys.length > 0 && allKeys.every(key => this.isChecked(key))
+            const comparableKeys = this.filterState(allKeys)
+            this.areAllSelected = comparableKeys.length > 0 && comparableKeys.every(key => this.isChecked(key))
         },
 
         /**
