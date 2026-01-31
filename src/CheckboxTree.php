@@ -384,7 +384,7 @@ class CheckboxTree extends CheckboxList
             }
 
             // Match items to the current parent level
-            if ($itemParentId === $parentId) {
+            if ($itemParentId == $parentId) {
                 // Extract label with multiple fallbacks
                 $label = $this->extractLabel($item, (string) $key);
 

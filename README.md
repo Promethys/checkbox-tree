@@ -40,7 +40,8 @@ This architecture ensures you get all the familiar CheckboxList functionality pl
 - **Dark Mode Support** - Fully compatible with Filament's dark mode
 - **Flat Array Storage** - Stores selections as a simple array, compatible with JSON columns and relationships
 
-## Visual Preview TODO: use a screenshot here
+## Visual Preview
+
 
 ```
 [x] User Management              (all children selected)
@@ -56,7 +57,16 @@ This architecture ensures you get all the familiar CheckboxList functionality pl
 [ ] Analytics                    (no children selected)
     [ ] View Reports
     [ ] Export Data
-``` 
+```
+
+## How It Works
+
+
+1. **Check a parent** - All children become checked, parent shows as checked
+2. **Uncheck a parent** - All children become unchecked
+3. **Check some children** - Parent shows indeterminate state (dash)
+4. **Check all children** - Parent automatically becomes checked
+5. **Uncheck all children** - Parent automatically becomes unchecked
 
 ## Use Cases
 
@@ -333,29 +343,9 @@ CheckboxTree::make('technologies')
     ->options([...])
 ```
 
-### Store Parent Keys
-
-By default, only leaf nodes are stored in the state. To include parent keys:
-
-```php
-CheckboxTree::make('permissions')
-    ->storeParentKeys()
-    ->options([...])
-```
-
-This is useful when you need to know which parent categories were selected, not just the individual items.
-
-## How It Works
-
-1. **Check a parent** - All children become checked, parent shows as checked
-2. **Uncheck a parent** - All children become unchecked
-3. **Check some children** - Parent shows indeterminate state (dash)
-4. **Check all children** - Parent automatically becomes checked
-5. **Uncheck all children** - Parent automatically becomes unchecked
-
 ### Eloquent Relationships
 
-Build a tree directly from a BelongsToMany relationship with hierarchical records:
+Build a tree directly from a `BelongsToMany` relationship with hierarchical records:
 
 ```php
 // Model: Permission has parent_id column
@@ -380,12 +370,6 @@ CheckboxTree::make('permissions')
     )
     ->hierarchical('parent_id')
 ```
-
-## Roadmap
-
-Future versions may include:
-
-- **HasMany relationships** - Support for HasMany in addition to BelongsToMany
 
 ## Development
 
