@@ -361,7 +361,7 @@ export default function checkboxTreeFormComponent({
             // Make Alpine update the DOM immediately
             this.$nextTick(() => {
                 // Ensure all parent checkboxes get their indeterminate state updated
-                const parentCheckboxes = document.querySelectorAll('.fi-fo-checkbox-tree-item input[type="checkbox"][x-bind\\:indeterminate]')
+                const parentCheckboxes = this.$el.querySelectorAll('.fi-fo-checkbox-tree-item input[type="checkbox"][x-bind\\:indeterminate]')
                 parentCheckboxes.forEach(checkbox => {
                     const key = checkbox.getAttribute('value')
                     if (this.indeterminateItems.includes(key)) {
