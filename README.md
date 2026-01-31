@@ -161,7 +161,7 @@ CheckboxTree::make('permissions')
 
 The component automatically builds the tree structure. Items with `parent_id => null` become root items.
 
-Supported label fields (in priority order): `label`, `name`, `title`, or falls back to the array key.
+The label field must be `label`. Falls back to the array key if `label` is not provided.
 
 ### Descriptions
 

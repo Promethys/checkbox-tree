@@ -406,14 +406,9 @@ class CheckboxTree extends CheckboxList
     }
 
     /**
-     * Extract label from an option item with multiple fallbacks.
+     * Extract label from an option item.
      *
-     * Supports various formats:
-     * - String: 'Label'
-     * - Array with 'label': ['label' => 'Label', 'parent_id' => null]
-     * - Array with 'name': ['name' => 'Name', 'parent_id' => null]
-     * - Array with 'title': ['title' => 'Title', 'parent_id' => null]
-     * - Falls back to key if no label field found
+     * Uses 'label' key for arrays, plain string value, or falls back to the array key.
      */
     protected function extractLabel(mixed $item, string $key): string
     {
@@ -422,7 +417,7 @@ class CheckboxTree extends CheckboxList
         }
 
         if (is_array($item)) {
-            return $item['label'] ?? $item['name'] ?? $item['title'] ?? $key;
+            return $item['label'] ?? $key;
         }
 
         return $key;
