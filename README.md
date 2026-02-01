@@ -45,25 +45,11 @@ This architecture ensures you get all the familiar CheckboxList functionality pl
 
 ## Visual Preview
 
-
-```
-[x] User Management              (all children selected)
-    [x] Create Users
-    [x] Edit Users
-    [x] Delete Users
-
-[-] Content Management           (some children selected - indeterminate)
-    [x] Create Posts
-    [x] Edit Posts
-    [ ] Delete Posts
-
-[ ] Analytics                    (no children selected)
-    [ ] View Reports
-    [ ] Export Data
-```
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/preview.gif)
 
 ## How It Works
 
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/how-it-works.gif)
 
 1. **Check a parent** - All children become checked, parent shows as checked
 2. **Uncheck a parent** - All children become unchecked
@@ -323,6 +309,10 @@ CheckboxTree::make('permissions')
     ->options([...])
 ```
 
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/collapsible-1.png)
+
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/collapsible-2.png)
+
 Start with all sections collapsed:
 
 ```php
@@ -341,6 +331,8 @@ CheckboxTree::make('permissions')
     ->options([...])
 ```
 
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/searchable.png)
+
 Customize the search placeholder:
 
 ```php
@@ -349,6 +341,8 @@ CheckboxTree::make('permissions')
     ->searchPrompt('Search permissions...')
     ->options([...])
 ```
+
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/searchable-custom-placeholder.png)
 
 When searching, parent nodes are shown if any of their children match the search term.
 
@@ -361,6 +355,8 @@ CheckboxTree::make('permissions')
     ->bulkToggleable()
     ->options([...])
 ```
+
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/bulk-toggleable.png)
 
 Customize the action labels:
 
@@ -403,6 +399,12 @@ CheckboxTree::make('permissions')
     )
     ->hierarchical('parent_id')
 ```
+
+## Known Issues
+
+**Checkbox flickering in multi-column layouts** — When using `columns()` with collapsible or searchable trees, checkboxes may occasionally flicker or briefly disappear during column reflow (collapse/expand, search filtering). This is a browser rendering bug with CSS multi-column layouts and dynamic content. The checkboxes remain functional — only the visual rendering is affected. Reloading the page or triggering a repaint (e.g. resizing the window) resolves it.
+
+![](https://raw.githubusercontent.com/Promethys/revive/refs/heads/main/resources/assets/imgs/known-issue-1.gif)
 
 ## Development
 
