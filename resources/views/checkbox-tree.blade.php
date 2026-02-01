@@ -8,6 +8,7 @@
     $isCollapsible = $isCollapsible();
     $defaultCollapsed = $isDefaultCollapsed();
     $statePath = $getStatePath();
+    $extraInputAttributeBag = $getExtraInputAttributeBag();
     $hierarchicalOptions = $getHierarchicalOptions();
     $indeterminateItems = $getIndeterminateItems();
     $parentKeys = $getParentKeys();
@@ -136,6 +137,7 @@
                     :collapsible="$isCollapsible"
                     :is-html-allowed="$isHtmlAllowed()"
                     :grid-direction="$gridDirection"
+                    :extra-input-attribute-bag="$extraInputAttributeBag"
                 />
             @endforeach
         </x-filament::grid>

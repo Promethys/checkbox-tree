@@ -8,6 +8,7 @@
     'collapsible' => false,
     'isHtmlAllowed' => false,
     'gridDirection' => 'column',
+    'extraInputAttributeBag' => new \Illuminate\View\ComponentAttributeBag(),
 ])
 
 @php
@@ -21,23 +22,23 @@
     // Disabled if: parent passed disabled=true (cascade) OR this key is individually disabled
     $isCurrentDisabled = $disabled || in_array((string) $key, $disabledOptionKeys, true);
 
-    $checkboxAttributes = [
+    $checkboxSpecificAttributes = [
         'disabled' => $isCurrentDisabled,
         'value' => $key,
     ];
 
     if ($hasChildren) {
-        $checkboxAttributes['x-on:change'] = "toggleParent('{$key}')";
-        $checkboxAttributes['x-bind:checked'] = "isParentChecked('{$key}')";
-        $checkboxAttributes['x-bind:indeterminate'] = "isIndeterminate('{$key}')";
+        $checkboxSpecificAttributes['x-on:change'] = "toggleParent('{$key}')";
+        $checkboxSpecificAttributes['x-bind:checked'] = "isParentChecked('{$key}')";
+        $checkboxSpecificAttributes['x-bind:indeterminate'] = "isIndeterminate('{$key}')";
     } else {
-        $checkboxAttributes['x-on:change'] = "toggleChild('{$key}')";
-        $checkboxAttributes['x-bind:checked'] = "isChecked('{$key}')";
+        $checkboxSpecificAttributes['x-on:change'] = "toggleChild('{$key}')";
+        $checkboxSpecificAttributes['x-bind:checked'] = "isChecked('{$key}')";
     }
 
-    $checkboxAttributeBag = \Filament\Support\prepare_inherited_attributes(
-        new \Illuminate\View\ComponentAttributeBag($checkboxAttributes)
-    )->class(['mt-1 shrink-0 break-inside-avoid']);
+    $checkboxAttributeBag = \Filament\Support\prepare_inherited_attributes($extraInputAttributeBag)
+        ->merge($checkboxSpecificAttributes, escape: false)
+        ->class(['mt-1 shrink-0 break-inside-avoid']);
 @endphp
 
 <div
@@ -114,6 +115,7 @@
                     :collapsible="$collapsible"
                     :is-html-allowed="$isHtmlAllowed"
                     :grid-direction="$gridDirection"
+                    :extra-input-attribute-bag="$extraInputAttributeBag"
                 />
             @endforeach
         </div>
