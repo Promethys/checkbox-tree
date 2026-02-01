@@ -43,14 +43,9 @@ This architecture ensures you get all the familiar CheckboxList functionality pl
 - **Dark Mode Support** - Fully compatible with Filament's dark mode
 - **Flat Array Storage** - Stores selections as a simple array, compatible with JSON columns and relationships
 
-## Visual Preview
-
-<video width="320" height="240" controls>
-  <source src="https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/videos/showcase.mp4" type="video/mp4">
-</video>
-
 ## How It Works
 
+![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/how-it-works.gif)
 <video width="320" height="240" controls>
   <source src="https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/videos/how-it-works.mp4" type="video/mp4">
 </video>
@@ -408,6 +403,7 @@ CheckboxTree::make('permissions')
 
 **Checkbox flickering in multi-column layouts** — When using `columns()` with collapsible or searchable trees, checkboxes may occasionally flicker or briefly disappear during column reflow (collapse/expand, search filtering). This is a browser rendering bug with CSS multi-column layouts and dynamic content. The checkboxes remain functional — only the visual rendering is affected. Reloading the page or triggering a repaint (e.g. resizing the window) resolves it.
 
+![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/known-issue-1.gif)
 <video width="320" height="240" controls>
   <source src="https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/videos/known-issue-1.mp4" type="video/mp4">
 </video>
