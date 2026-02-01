@@ -13,6 +13,31 @@
     $parentKeys = $getParentKeys();
     $storeParentKeys = $shouldStoreParentKeys();
     $gridDirection = $getGridDirection() ?? 'column';
+    $disabledOptionKeys = [];
+    $collectDisabledOptionKeys = function (array $options) use (&$collectDisabledOptionKeys, &$disabledOptionKeys, $isOptionDisabled): void {
+        foreach ($options as $key => $option) {
+            $label = is_array($option) ? ($option['label'] ?? $key) : $option;
+            $hasChildren = is_array($option) && isset($option['children']) && ! empty($option['children']);
+
+            if ($hasChildren) {
+                $collectDisabledOptionKeys($option['children']);
+
+                $allChildrenDisabled = collect($option['children'])
+                    ->keys()
+                    ->every(fn ($childKey) => in_array((string) $childKey, $disabledOptionKeys, true));
+
+                if ($allChildrenDisabled) {
+                    $disabledOptionKeys[] = (string) $key;
+                    continue;
+                }
+            }
+
+            if ($isOptionDisabled($key, $label)) {
+                $disabledOptionKeys[] = (string) $key;
+            }
+        }
+    };
+    $collectDisabledOptionKeys($hierarchicalOptions);
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
@@ -105,6 +130,7 @@
                     :key="$key"
                     :option="$option"
                     :disabled="$isDisabled"
+                    :disabled-option-keys="$disabledOptionKeys"
                     :level="0"
                     :searchable="$isSearchable"
                     :collapsible="$isCollapsible"

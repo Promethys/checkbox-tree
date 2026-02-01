@@ -1,9 +1,12 @@
 # Filament Checkbox Tree
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/promethys/checkbox-tree.svg?style=flat-square)](https://packagist.org/packages/promethys/checkbox-tree)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/promethys/checkbox-tree/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/Promethys/checkbox-tree/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/promethys/checkbox-tree.svg?style=flat-square)](https://packagist.org/packages/promethys/checkbox-tree)
 
-A hierarchical checkbox tree component for Filament v3 forms. Display checkboxes in a parent-child tree structure with automatic state management.
+If this plugin is useful to you, consider [giving it a ⭐ on GitHub](https://github.com/Promethys/checkbox-tree).
+
+This plugin provides a hierarchical checkbox tree component for Filament forms. Display checkboxes in a parent-child tree structure with automatic state management.
 
 ## Architecture & Compatibility
 
@@ -280,6 +283,36 @@ CheckboxTree::make('permissions')
     ->options([...])
 ```
 
+### Disabling Specific Options
+
+Disable individual options using a closure:
+
+```php
+CheckboxTree::make('permissions')
+    ->disableOptionWhen(fn (string $value): bool => $value === 'delete_users')
+    ->options([...])
+```
+
+When a parent is disabled, all its children are automatically disabled too:
+
+```php
+// Disables "User Management" and all its children
+CheckboxTree::make('permissions')
+    ->disableOptionWhen(fn (string $value): bool => $value === 'user_management')
+    ->options([...])
+```
+
+When all children of a parent are disabled, the parent is automatically disabled as well:
+
+```php
+// Disables all children of "User Management", so the parent becomes disabled too
+CheckboxTree::make('permissions')
+    ->disableOptionWhen(fn (string $value): bool => in_array($value, [
+        'create_users', 'edit_users', 'delete_users',
+    ]))
+    ->options([...])
+```
+
 ### Collapsible Sections
 
 Enable collapsible parent nodes:
@@ -392,9 +425,28 @@ composer test
 
 See [CHANGELOG](CHANGELOG.md) for recent changes.
 
+## Issue Guidelines
+
+If you encounter a bug or unexpected behavior, please help us help you by following these guidelines:
+
+* **[Create an issue on GitHub](https://github.com/Promethys/checkbox-tree/issues)**: Create an issue on GitHub
+* **Describe the issue clearly:** What did you try to do? What did you expect to happen? What actually happened?
+* **Include relevant code snippets:** Show any relevant model, config, or page setup related to the issue.
+* **Share error messages:** If possible, paste the full error output or stack trace.
+* **Attach screenshots:** Visuals often help us understand UI-related bugs or logic problems more quickly.
+* **Mention your setup:** Let us know your PHP version, Laravel version, Filament version, and the version of this plugin.
+
+> The more details you provide, the faster and better we can help. Thank you!
+
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Contributions are welcome! Please follow these guidelines:
+
+1. Fork the repository and create a feature branch
+2. Run `composer format` to apply code style (Laravel Pint)
+3. Add tests for any new functionality (`composer test`)
+4. Ensure PHPStan passes (`composer analyse`)
+5. Submit a pull request with a clear description
 
 ## License
 

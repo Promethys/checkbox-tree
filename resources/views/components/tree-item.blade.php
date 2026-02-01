@@ -2,6 +2,7 @@
     'key',
     'option',
     'disabled' => false,
+    'disabledOptionKeys' => [],
     'level' => 0,
     'searchable' => false,
     'collapsible' => false,
@@ -17,8 +18,11 @@
     $indent = $level * 1.5;
     $escapedLabel = addslashes($label);
 
+    // Disabled if: parent passed disabled=true (cascade) OR this key is individually disabled
+    $isCurrentDisabled = $disabled || in_array((string) $key, $disabledOptionKeys, true);
+
     $checkboxAttributes = [
-        'disabled' => $disabled,
+        'disabled' => $isCurrentDisabled,
         'value' => $key,
     ];
 
@@ -103,7 +107,8 @@
                 <x-checkbox-tree::tree-item
                     :key="$childKey"
                     :option="$childOption"
-                    :disabled="$disabled"
+                    :disabled="$isCurrentDisabled"
+                    :disabled-option-keys="$disabledOptionKeys"
                     :level="$level + 1"
                     :searchable="$searchable"
                     :collapsible="$collapsible"
