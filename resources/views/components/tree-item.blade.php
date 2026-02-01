@@ -6,6 +6,7 @@
     'searchable' => false,
     'collapsible' => false,
     'isHtmlAllowed' => false,
+    'gridDirection' => 'column',
 ])
 
 @php
@@ -36,7 +37,10 @@
 @endphp
 
 <div
-    class="fi-fo-checkbox-tree-item"
+    @class([
+        'fi-fo-checkbox-tree-item',
+        'break-inside-avoid pt-4' => $level === 0 && $gridDirection === 'column',
+    ])
     @if ($searchable) x-show="isItemVisible('{{ $key }}', '{{ $escapedLabel }}')" @endif
 >
     <div class="flex gap-x-1" style="padding-left: {{ $indent }}rem;">
@@ -104,6 +108,7 @@
                     :searchable="$searchable"
                     :collapsible="$collapsible"
                     :is-html-allowed="$isHtmlAllowed"
+                    :grid-direction="$gridDirection"
                 />
             @endforeach
         </div>
