@@ -121,8 +121,7 @@
                 \Filament\Support\prepare_inherited_attributes($attributes)
                     ->merge($getExtraAttributes(), escape: false)
                     ->class([
-                        'fi-fo-checkbox-list gap-4',
-                        '-mt-4' => $gridDirection === 'column',
+                        'fi-fo-checkbox-list gap-4 space-y-2',
                     ])
             "
         >

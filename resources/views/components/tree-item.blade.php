@@ -44,7 +44,7 @@
 <div
     @class([
         'fi-fo-checkbox-tree-item',
-        'break-inside-avoid pt-4' => $level === 0 && $gridDirection === 'column',
+        'break-inside-avoid' => $level === 0 && $gridDirection === 'column',
     ])
     @if ($searchable) x-show="isItemVisible('{{ $key }}', '{{ $escapedLabel }}')" @endif
 >
