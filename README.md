@@ -182,6 +182,8 @@ CheckboxTree::make('permissions')
     ])
 ```
 
+![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/descriptions-1.png)
+
 Descriptions are optional and displayed in smaller, muted text below the label.
 
 ### HTML Support
@@ -225,6 +227,8 @@ CheckboxTree::make('permissions')
     ])
 ```
 
+![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/descriptions-2.png)
+
 > **Security Warning**: Always ensure that HTML content is safe to render. User-generated content should be properly sanitized to prevent XSS attacks.
 
 ### Multi-Level Nesting
@@ -249,6 +253,8 @@ CheckboxTree::make('categories')
         ],
     ])
 ```
+
+![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/multi-level.png)
 
 ### With Validation
 
