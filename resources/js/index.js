@@ -1,5 +1,6 @@
 export default function checkboxTreeFormComponent({
     state,
+    statePath,
     options,
     indeterminateItems,
     searchable = false,
@@ -10,6 +11,7 @@ export default function checkboxTreeFormComponent({
 }) {
     return {
         state: state,
+        statePath: statePath,
         options: options,
         indeterminateItems: indeterminateItems,
         areAllSelected: false,
@@ -39,6 +41,30 @@ export default function checkboxTreeFormComponent({
             // Ensure indeterminate states are applied after initial render
             this.$nextTick(() => {
                 this.updateIndeterminateStates()
+            })
+
+            // Re-sync state from Livewire after commits (e.g. form save).
+            // With x-ignore, Livewire doesn't re-render our DOM, so $entangle
+            // may not reliably push the full server state back to Alpine.
+            // We explicitly re-read the state from the wire to stay in sync.
+            const componentId = this.$wire.__instance.id
+            Livewire.hook('commit', ({ component, succeed }) => {
+                succeed(({ snapshot }) => {
+                    if (component.id !== componentId) {
+                        return
+                    }
+
+                    this.$nextTick(() => {
+                        const serverState = this.$wire.get(this.statePath)
+
+                        if (Array.isArray(serverState)) {
+                            this.state = [...serverState]
+                        }
+
+                        this.updateIndeterminateStates()
+                        this.updateAreAllSelected()
+                    })
+                })
             })
         },
 

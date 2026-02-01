@@ -48,6 +48,7 @@
         x-load-src="{{ FilamentAsset::getAlpineComponentSrc('checkbox-tree', 'promethys/checkbox-tree') }}"
         x-data="checkboxTreeFormComponent({
             state: $wire.{{ $applyStateBindingModifiers("\$entangle('{$statePath}')") }},
+            statePath: @js($statePath),
             options: @js($hierarchicalOptions),
             indeterminateItems: @js($indeterminateItems),
             searchable: @js($isSearchable),
