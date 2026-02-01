@@ -109,7 +109,7 @@ class CheckboxTree extends CheckboxList
 
         foreach ($options as $key => $option) {
             if (is_array($option) && isset($option['children']) && ! empty($option['children'])) {
-                $parentKeys[] = $key;
+                $parentKeys[] = (string) $key;
                 $parentKeys = array_merge($parentKeys, $this->collectParentKeys($option['children']));
             }
         }
@@ -331,7 +331,7 @@ class CheckboxTree extends CheckboxList
 
             // Build tree from flat items and merge with nested items
             $builtTree = ! empty($flatItems) ? $this->buildTree($flatItems) : [];
-            $this->hierarchicalOptions = array_merge($nestedItems, $builtTree);
+            $this->hierarchicalOptions = $nestedItems + $builtTree;
 
             return $this->hierarchicalOptions;
         }
@@ -486,7 +486,7 @@ class CheckboxTree extends CheckboxList
         $keys = [];
 
         foreach ($options as $key => $option) {
-            $keys[] = $key;
+            $keys[] = (string) $key;
 
             if (is_array($option) && isset($option['children'])) {
                 $keys = array_merge($keys, $this->flattenKeys($option['children']));

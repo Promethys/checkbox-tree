@@ -381,6 +381,27 @@ it('identifies parent keys at multiple nesting levels', function () {
         ->not->toContain('other_leaf');
 });
 
+it('preserves numeric keys in hierarchical tree and returns parent keys as strings', function () {
+    $field = CheckboxTree::make('permissions')
+        ->hierarchical('parent_id')
+        ->options([
+            1 => ['label' => 'User Management', 'parent_id' => null],
+            2 => ['label' => 'Create Users', 'parent_id' => 1],
+            3 => ['label' => 'Edit Users', 'parent_id' => 1],
+        ]);
+
+    $options = $field->getHierarchicalOptions();
+
+    expect($options)->toHaveCount(1)
+        ->and($options)->toHaveKey(1)
+        ->and($options[1]['children'])->toHaveCount(2);
+
+    $parentKeys = $field->getParentKeys();
+
+    expect($parentKeys)->toEqual(['1'])
+        ->and($parentKeys[0])->toBeString();
+});
+
 // ==========================================
 // Flat Options with parent_id
 // ==========================================
