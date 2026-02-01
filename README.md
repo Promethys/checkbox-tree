@@ -45,11 +45,15 @@ This architecture ensures you get all the familiar CheckboxList functionality pl
 
 ## Visual Preview
 
-![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/preview.gif)
+<video width="320" height="240" controls>
+  <source src="https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/videos/showcase.mp4" type="video/mp4">
+</video>
 
 ## How It Works
 
-![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/how-it-works.gif)
+<video width="320" height="240" controls>
+  <source src="https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/videos/how-it-works.mp4" type="video/mp4">
+</video>
 
 1. **Check a parent** - All children become checked, parent shows as checked
 2. **Uncheck a parent** - All children become unchecked
@@ -404,7 +408,9 @@ CheckboxTree::make('permissions')
 
 **Checkbox flickering in multi-column layouts** — When using `columns()` with collapsible or searchable trees, checkboxes may occasionally flicker or briefly disappear during column reflow (collapse/expand, search filtering). This is a browser rendering bug with CSS multi-column layouts and dynamic content. The checkboxes remain functional — only the visual rendering is affected. Reloading the page or triggering a repaint (e.g. resizing the window) resolves it.
 
-![](https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/imgs/known-issue-1.gif)
+<video width="320" height="240" controls>
+  <source src="https://raw.githubusercontent.com/Promethys/checkbox-tree/refs/heads/main/resources/assets/videos/known-issue-1.mp4" type="video/mp4">
+</video>
 
 ## Development
 
